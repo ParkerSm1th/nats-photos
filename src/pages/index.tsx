@@ -26,18 +26,23 @@ export default function Home() {
             <AuthShowcase />
           </div>
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-2xl font-bold">Shows</h3>
-            <p className="text-2xl text-white">
+            <h3 className="text-2xl font-bold text-white">Shows</h3>
+            <ul className="text-2xl text-white">
               {shows.data
                 ? shows.data.map((show) => {
                     return (
-                      <div key={show.id}>
-                        <p>{show.name}</p>
-                      </div>
+                      <li key={show.id}>
+                        <a
+                          className="text-white no-underline"
+                          href={`/shows/${show.slug}`}
+                        >
+                          {show.name}
+                        </a>
+                      </li>
                     );
                   })
                 : "Loading shows"}
-            </p>
+            </ul>
           </div>
         </div>
       </main>
