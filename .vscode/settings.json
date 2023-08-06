@@ -1,0 +1,9 @@
+// remove unused deps
+// Path: package.json
+{
+    "editor": {
+        "codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    }
+}

@@ -15,12 +15,17 @@ datasource db {
 }
 
 model Show {
-    id        String   @id @default(uuid())
-    name      String   @db.Text
-    slug      String   @unique @db.Text
-    location  String   @db.Text
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    id        String    @id @default(uuid())
+    name      String    @db.Text
+    slug      String    @unique @db.Text
+    location  String    @db.Text
+    startDate DateTime
+    endDate   DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @default(now()) @updatedAt
+    parent    Show?     @relation("ParentShow", fields: [parentId], references: [id])
+    parentId  String?
+    children  Show[]    @relation("ParentShow")
 }
 
 model Account {
@@ -55,6 +60,8 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @default(now()) @updatedAt
     accounts      Account[]
     sessions      Session[]
 }
