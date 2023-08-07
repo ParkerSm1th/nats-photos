@@ -4,14 +4,33 @@ export const DynamicShowNameBreadcrumb = ({
   slugs,
 }: {
   slugs: string[];
-}): JSX.Element => {
+}): JSX.Element | null => {
+  const allSlugs = ["photos", "shows", ...slugs];
   const showData = api.shows.getShowsBySlug.useQuery(slugs);
   // organize the show data so that it's in the same order as the slugs
-  const organizedShowData = showData.data?.sort((a, b) => {
+  const sortedShows = showData.data?.sort((a, b) => {
     return slugs.indexOf(a.slug) - slugs.indexOf(b.slug);
   });
+  if (!sortedShows) return null;
+  const organizedShowData = [
+    {
+      id: "photos",
+      name: "Photos",
+      slug: "photos",
+    },
+    {
+      id: "shows",
+      name: "Shows",
+      slug: "shows",
+    },
+    ...sortedShows.map((show) => ({
+      id: show.id,
+      name: show.name,
+      slug: show.slug,
+    })),
+  ];
   return (
-    <div className="flex flex-row items-center gap-2">
+    <div className="sm:display-none flex flex-row items-center gap-2">
       {organizedShowData?.map((show, index) => (
         <div key={show.id}>
           <a
@@ -19,8 +38,8 @@ export const DynamicShowNameBreadcrumb = ({
             // we want the href to be the slug of the show, and all the slugs before it
             // so if we have /shows/2021/summer-classic, the array will be ["shows", "2021", "summer-classic"]
             // then we want to display a breadcrumb like this:
-            href={`/shows/${slugs
-              .slice(0, slugs.indexOf(show.slug) + 1)
+            href={`/${allSlugs
+              .slice(0, allSlugs.indexOf(show.slug) + 1)
               .join("/")}`}
           >
             {show.name}

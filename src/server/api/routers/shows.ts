@@ -1,27 +1,41 @@
+import { type Show as PrismaShow } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import { type Show as PrismaShow } from "@prisma/client";
 
 export const showRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }): Promise<Show[]> => {
-    const rawShows = await ctx.prisma.show.findMany({
-      orderBy: { startDate: "desc" },
-    });
-    const reducedShows = rawShows.reduce((acc, show) => {
-      const showWithChildren = {
-        ...show,
-        children: rawShows
-          .filter((s) => s.parentId === show.id)
-          .map(fromPrisma),
-      };
-      if (show.parentId === null) {
-        acc.push(showWithChildren);
-      }
-      return acc;
-    }, [] as Show[]);
-    const shows = reducedShows.map(fromPrisma);
-    return shows;
-  }),
+  getAll: publicProcedure
+    .input(
+      z.object({
+        includeChildren: z.boolean().optional(),
+        limit: z.number().optional(),
+        orderByStartDate: z.enum(["asc", "desc"]).optional(),
+      })
+    )
+    .query(async ({ ctx, input }): Promise<Show[]> => {
+      const rawShows = await ctx.prisma.show.findMany({
+        orderBy: { startDate: input.orderByStartDate ?? "desc" },
+        take: input.limit ? input.limit : undefined,
+      });
+      const reducedShows = rawShows.reduce((acc, show) => {
+        const showWithChildren = {
+          ...show,
+          children: rawShows
+            .filter((s) => s.parentId === show.id)
+            .sort((a, b) => {
+              if (a.startDate < b.startDate) return -1;
+              if (a.startDate > b.startDate) return 1;
+              return 0;
+            })
+            .map(fromPrisma),
+        };
+        if (show.parentId === null) {
+          acc.push(showWithChildren);
+        }
+        return acc;
+      }, [] as Show[]);
+      const shows = reducedShows.map(fromPrisma);
+      return shows;
+    }),
   getShowsBySlug: publicProcedure
     .input(z.array(z.string()))
     .query(async ({ ctx, input }) => {
@@ -40,7 +54,7 @@ export const showRouter = createTRPCRouter({
       if (!rawShow) return null;
       const childShows = await ctx.prisma.show.findMany({
         where: { parentId: rawShow.id },
-        orderBy: { startDate: "desc" },
+        orderBy: { startDate: "asc" },
       });
       return {
         ...rawShow,
