@@ -8,8 +8,9 @@ I am using some new technologies like TRPC, Next.js, and NextAuth in this projec
 # Goals
 
 The goals for this project are as follows:
-[x] Create authentication using NextAuth & Google
-[ ] Integrate S3 as a photo storage solution
-[ ] Integrate stripe in order to sell the photos
-[ ] Create a service which can automatically watermark photos
-[ ] Create a quick and easy way for distribution of the photos
+
+- [x] Create authentication using NextAuth & Google
+- [ ] Integrate S3 as a photo storage solution
+- [ ] Integrate stripe in order to sell the photos
+- [ ] Create a service which can automatically watermark photos
+- [ ] Create a quick and easy way for distribution of the photos
