@@ -23,6 +23,7 @@ const config = {
         fixStyle: "inline-type-imports",
       },
     ],
+    "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],

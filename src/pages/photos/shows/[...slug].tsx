@@ -1,3 +1,4 @@
+import { SpinnerPage } from "@/components/global/Spinner";
 import { DynamicShowNameBreadcrumb } from "@/components/shows/DynamicShowNameBreadcrumb";
 import { api } from "@/utils/api";
 import { useRouter } from "next/router";
@@ -13,7 +14,7 @@ export default function Show() {
   });
 
   return show.isLoading ? (
-    <div>Loading...</div>
+    <SpinnerPage />
   ) : !show.data ? (
     <div>Error</div>
   ) : (
