@@ -155,8 +155,10 @@ function Home() {
                 >
                   {/* Hide the meta data and show it centered in the middle of the image on hover of the whole div */}
                   <div className="absolute z-10 flex select-none flex-col items-center justify-center text-white opacity-0 transition-all group-hover:opacity-100">
-                    <h3 className="text-xl font-bold">{item.title}</h3>
-                    <h4 className="mt-1 text-lg">{item.showName}</h4>
+                    <h3 className="text-sm font-bold md:text-xl">
+                      {item.title}
+                    </h3>
+                    <h4 className="mt-1 text-xs md:text-lg">{item.showName}</h4>
                   </div>
                   <Image
                     height={200}
@@ -172,6 +174,7 @@ function Home() {
             </div>
           </div>
         </div>
+        <div className="hero-bg mt-16 h-screen max-h-screen w-full overflow-hidden"></div>
       </main>
 
       {selectedImage && (

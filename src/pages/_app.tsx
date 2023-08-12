@@ -24,6 +24,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
     <>
       <Head>
         <meta name="description" content="Natalie Lockhart's Photography" />
+        <title>Natalie Lockhart Photography</title>
         <link
           rel="apple-touch-icon"
           sizes="180x180"

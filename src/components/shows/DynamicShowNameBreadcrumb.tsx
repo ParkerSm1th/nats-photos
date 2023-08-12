@@ -1,4 +1,6 @@
 import { api } from "@/utils/api";
+import { useMemo } from "react";
+import { Spinner } from "../ui/ui/spinner";
 
 export const DynamicShowNameBreadcrumb = ({
   slugs,
@@ -6,30 +8,37 @@ export const DynamicShowNameBreadcrumb = ({
   slugs: string[];
 }): JSX.Element | null => {
   const allSlugs = ["photos", "shows", ...slugs];
-  const showData = api.shows.getShowsBySlug.useQuery(slugs);
+  const { data: showData, isLoading } =
+    api.shows.getShowsBySlug.useQuery(slugs);
   // organize the show data so that it's in the same order as the slugs
-  const sortedShows = showData.data?.sort((a, b) => {
+  const sortedShows = showData?.sort((a, b) => {
     return slugs.indexOf(a.slug) - slugs.indexOf(b.slug);
   });
-  if (!sortedShows) return null;
-  const organizedShowData = [
-    {
-      id: "photos",
-      name: "Photos",
-      slug: "photos",
-    },
-    {
-      id: "shows",
-      name: "Shows",
-      slug: "shows",
-    },
-    ...sortedShows.map((show) => ({
-      id: show.id,
-      name: show.name,
-      slug: show.slug,
-    })),
-  ];
-  return (
+  const organizedShowData = useMemo(
+    () => [
+      {
+        id: "photos",
+        name: "Photos",
+        slug: "photos",
+      },
+      {
+        id: "shows",
+        name: "Shows",
+        slug: "shows",
+      },
+      ...(sortedShows
+        ? sortedShows.map((show) => ({
+            id: show.id,
+            name: show.name,
+            slug: show.slug,
+          }))
+        : []),
+    ],
+    [sortedShows]
+  );
+  return isLoading ? (
+    <Spinner className="h-6 w-6" />
+  ) : (
     <div className="sm:display-none flex flex-row items-center gap-2">
       {organizedShowData?.map((show, index) => (
         <div key={show.id}>

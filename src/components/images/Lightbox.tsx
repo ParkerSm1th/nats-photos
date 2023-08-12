@@ -93,6 +93,7 @@ function Lightbox({
               height={800}
               className="h-full w-full"
               layout="responsive"
+              placeholder="blur"
               objectFit="contain"
               loading="lazy"
               blurDataURL={selectedImage}

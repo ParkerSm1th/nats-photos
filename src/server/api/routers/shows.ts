@@ -61,6 +61,15 @@ export const showRouter = createTRPCRouter({
         children: childShows,
       };
     }),
+  getShowNameBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const rawShow = await ctx.prisma.show.findUnique({
+        where: { slug: input.slug },
+      });
+      if (!rawShow) return null;
+      return rawShow.name;
+    }),
 });
 
 type ShowWithChildren = Partial<PrismaShow> & { children?: Show[] };
@@ -69,10 +78,10 @@ const fromPrisma = (show: ShowWithChildren): Show => {
   return {
     id: show.id!,
     name: show.name!,
-    slug: show.slug! as string,
+    slug: show.slug!,
     location: show.location!,
-    startDate: show.startDate! as Date,
-    endDate: show.endDate ? (show.endDate as Date) : undefined,
+    startDate: show.startDate!,
+    endDate: show.endDate ? show.endDate : undefined,
     createdAt: show.createdAt!,
     updatedAt: show.updatedAt!,
     children: show.children?.map(fromPrisma),
