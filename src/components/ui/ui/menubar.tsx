@@ -65,7 +65,7 @@ const MenubarSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <FontAwesomeIcon icon={faChevronRight} className="ml-auto h-4 w-4" />
+    <FontAwesomeIcon icon={faChevronRight} className="ml-auto h-3 w-3" />
   </MenubarPrimitive.SubTrigger>
 ));
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName;
