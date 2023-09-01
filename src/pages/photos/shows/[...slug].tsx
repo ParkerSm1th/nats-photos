@@ -6,6 +6,7 @@ import { api } from "@/utils/api";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import superjson from "superjson";
 
@@ -47,14 +48,14 @@ export default function Show(
                   <div className="flex flex-row items-center gap-2">
                     {show.data?.children.map((child) => (
                       <div key={child.id}>
-                        <a
+                        <Link
                           className="text-black underline"
                           href={`/photos/shows/${slugs.join("/")}/${
                             child.slug
                           }`}
                         >
                           {child.name}
-                        </a>
+                        </Link>
                       </div>
                     ))}
                   </div>
@@ -84,6 +85,7 @@ export async function getServerSideProps(
   if (typeof furthestRightSlug !== "string") throw new Error("No slug");
 
   await ssg.shows.getShowNameBySlug.prefetch({ slug: furthestRightSlug });
+  await ssg.shows.getShowsBySlug.prefetch(slug);
 
   return {
     props: {

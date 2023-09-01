@@ -1,4 +1,4 @@
-import { type Show as PrismaShow } from "@prisma/client";
+import { type Show as PrismaShow, type Show } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
@@ -26,14 +26,14 @@ export const showRouter = createTRPCRouter({
               if (a.startDate > b.startDate) return 1;
               return 0;
             })
-            .map(fromPrisma),
+            .map((s) => fromPrisma(s)),
         };
         if (show.parentId === null) {
           acc.push(showWithChildren);
         }
         return acc;
       }, [] as Show[]);
-      const shows = reducedShows.map(fromPrisma);
+      const shows = reducedShows.map((s) => fromPrisma(s));
       return shows;
     }),
   getShowsBySlug: publicProcedure
@@ -43,7 +43,7 @@ export const showRouter = createTRPCRouter({
         where: { slug: { in: input } },
         orderBy: { startDate: "desc" },
       });
-      return rawShows.map(fromPrisma);
+      return rawShows.map((s) => fromPrisma(s));
     }),
   getShowBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
@@ -74,16 +74,19 @@ export const showRouter = createTRPCRouter({
 
 type ShowWithChildren = Partial<PrismaShow> & { children?: Show[] };
 
-const fromPrisma = (show: ShowWithChildren): Show => {
+const fromPrisma = (show: ShowWithChildren, children = true): Show => {
   return {
     id: show.id!,
     name: show.name!,
     slug: show.slug!,
     location: show.location!,
     startDate: show.startDate!,
-    endDate: show.endDate ? show.endDate : undefined,
+    endDate: show.endDate ? show.endDate : null,
     createdAt: show.createdAt!,
     updatedAt: show.updatedAt!,
-    children: show.children?.map(fromPrisma),
+    parentId: show.parentId ? show.parentId : null,
+    ...(children && {
+      children: show.children?.map((s) => fromPrisma(s, false)),
+    }),
   };
 };

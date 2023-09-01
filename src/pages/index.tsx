@@ -1,11 +1,16 @@
 import { RootLayout } from "@/components/global/Layout";
+import Lightbox from "@/components/images/Lightbox";
+import { useIsMobile } from "@/utils/hooks/useIsMobile";
+import { faArrowDown } from "@fortawesome/pro-light-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 
-import Lightbox from "@/components/images/Lightbox";
-import { useIsMobile } from "@/utils/hooks/useIsMobile";
-import { useState, type ReactElement } from "react";
+import type { ReactElement } from "react";
+import { useState } from "react";
+
+import { Calendar } from "@/components/ui/calendar";
 import SmallLogo from "../../public/images/WhiteSmallLogo.png";
 
 const NAV_LINKS = [
@@ -115,6 +120,7 @@ function Home() {
   const shouldShowNext =
     selectedImageIndex !== -1 && selectedImageIndex < portfolioItems.length - 1;
   const shouldShowPrev = selectedImageIndex !== -1 && selectedImageIndex > 0;
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
     <>
@@ -124,6 +130,14 @@ function Home() {
       <main className="min-w-screen home mb-28 flex min-h-screen flex-col items-center justify-center bg-white">
         <div className="hero-bg h-screen max-h-screen w-full overflow-hidden">
           {isMobile ? <MobileNav /> : <Nav />}
+          <div
+            className="absolute bottom-10 left-1/2 h-6 w-6 translate-x-1/2 cursor-pointer text-lg text-white"
+            onClick={() => {
+              window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+            }}
+          >
+            <FontAwesomeIcon icon={faArrowDown} />
+          </div>
         </div>
         <div className="w-full max-w-7xl px-8">
           <div className="m-auto mt-16 flex w-full max-w-3xl flex-col items-center justify-center">
@@ -174,7 +188,57 @@ function Home() {
             </div>
           </div>
         </div>
-        <div className="hero-bg mt-16 h-screen max-h-screen w-full overflow-hidden"></div>
+        <div className="mt-16 w-full overflow-hidden">
+          <Image
+            src="https://res.cloudinary.com/dqdjvho5d/image/upload/v1692488716/IMG_6221_copy_gwrllk.jpg"
+            quality={100}
+            height={400}
+            width={1000}
+            loading="eager"
+            alt="Equine photography"
+            className="h-full w-screen object-cover"
+          />
+        </div>
+        <div className="my-16">
+          <h2 className="mb-2 text-center text-2xl font-bold">
+            Let's work together!
+          </h2>
+          <div className="grid max-w-4xl grid-cols-2 items-center justify-center gap-2">
+            <div className="text-center">
+              <h2 className="mb-2 text-center text-2xl font-semibold">
+                Scheduled Locations
+              </h2>
+              <p className="text-md px-2">
+                Below you can find the shows I am already scheduled to be
+                shooting at. If you are attending one of the below shows please
+                reach out letting me know you'd like for me to shoot you at that
+                show!
+              </p>
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border"
+                bookedDays={[
+                  {
+                    date: new Date(2023, 8, 1),
+                    title: "Estes Park, 2023",
+                  },
+                ]}
+              />
+            </div>
+            <div className="text-center">
+              <h2 className="mb-2 text-center text-2xl font-semibold">
+                Other Inquiries
+              </h2>
+              <p className="text-md px-2">
+                If you are interested in booking a session with me or I am not
+                already scheduled to attend a show you will be showing at,
+                please reach out and let's see if we can make something happen!
+              </p>
+            </div>
+          </div>
+        </div>
       </main>
 
       {selectedImage && (
