@@ -86,6 +86,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .home {
   font-family: 'Raleway', sans-serif;
 }
@@ -95,4 +99,10 @@
   background-position: center;
   background-size: cover;
   animation: fadein 2s;
+}
+
+@media screen and (max-width: 650px) {
+  .hero-bg {
+    background-position-x: calc(50% - 130px);
+  }
 }

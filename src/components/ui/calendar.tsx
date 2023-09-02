@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import {
   faChevronLeft,
   faChevronRight,
+  faMapPin,
 } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { set } from "date-fns";
 import * as React from "react";
 import { DayClickEventHandler, DayPicker } from "react-day-picker";
 
@@ -14,6 +14,7 @@ export type CalendarPropsWithEvents = CalendarProps & {
   bookedDays: {
     date: Date;
     title: string;
+    link?: string;
   }[];
 };
 
@@ -30,28 +31,37 @@ function Calendar({
   );
 
   const handleDayClick: DayClickEventHandler = (day, modifiers) => {
-    console.log(day);
     setSelectedDay(day.toString());
   };
 
   const footer = React.useMemo(() => {
-    console.log(selectedDay);
-    console.log(bookedDaysAsDates);
-    console.log(bookedDaysAsDates.includes(selectedDay));
     if (bookedDaysAsDates.includes(selectedDay)) {
+      const bookedDay = bookedDays.find(
+        (day) => day.date.toString() === selectedDay
+      );
+      if (!bookedDay)
+        return <div className="mt-2">Nothing scheduled for this day</div>;
       return (
-        <div className="flex flex-col items-center justify-center">
-          <p className="text-center">
-            {
-              bookedDays.find((day) => day.date.toString() === selectedDay)
-                ?.title
-            }
-          </p>
-        </div>
+        <a className="mt-2" href={bookedDay.link ?? ""} target="_blank">
+          <div
+            className="mt-2 flex flex-col items-center justify-center font-medium"
+            key={selectedDay}
+          >
+            <div className="flex items-center gap-1 text-center">
+              {bookedDay.title}
+              {bookedDay.link && (
+                <FontAwesomeIcon
+                  className="h-4 w-4 text-purple-500"
+                  icon={faMapPin}
+                />
+              )}
+            </div>
+          </div>
+        </a>
       );
     }
 
-    return <div>Nothing scheduled for this day</div>;
+    return <div className="mt-2">Nothing scheduled for this day</div>;
   }, [bookedDays, bookedDaysAsDates, selectedDay]);
   return (
     <DayPicker
