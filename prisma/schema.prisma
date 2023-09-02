@@ -26,6 +26,17 @@ model Show {
     parent    Show?     @relation("ParentShow", fields: [parentId], references: [id])
     parentId  String?
     children  Show[]    @relation("ParentShow")
+    Photo     Photo[]
+
+    @@index([parentId])
+}
+
+model Photo {
+    id        String   @id @default(uuid())
+    showId    String
+    show      Show     @relation(fields: [showId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Account {
@@ -54,16 +65,33 @@ model Session {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum UserRole {
+    USER
+    ADMIN
+}
+
 model User {
     id            String    @id @default(uuid())
     name          String?
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    role          UserRole  @default(USER)
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @default(now()) @updatedAt
     accounts      Account[]
     sessions      Session[]
+}
+
+model VerificationRequest {
+    id         String   @id @default(cuid())
+    identifier String
+    token      String   @unique
+    expires    DateTime
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    @@unique([identifier, token])
 }
 
 model VerificationToken {

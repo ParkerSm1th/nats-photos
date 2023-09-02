@@ -1,4 +1,9 @@
+import { Show } from "@/common/types";
 import { api } from "@/utils/api";
+import { useMemo } from "react";
+
+import { Spinner } from "../ui/ui/spinner";
+import Link from "next/link";
 
 export const DynamicShowNameBreadcrumb = ({
   slugs,
@@ -6,34 +11,38 @@ export const DynamicShowNameBreadcrumb = ({
   slugs: string[];
 }): JSX.Element | null => {
   const allSlugs = ["photos", "shows", ...slugs];
-  const showData = api.shows.getShowsBySlug.useQuery(slugs);
+  const { data: showData } = api.shows.getShowsBySlug.useQuery(slugs);
   // organize the show data so that it's in the same order as the slugs
-  const sortedShows = showData.data?.sort((a, b) => {
+  const sortedShows = showData?.sort((a: Show, b: Show) => {
     return slugs.indexOf(a.slug) - slugs.indexOf(b.slug);
   });
-  if (!sortedShows) return null;
-  const organizedShowData = [
-    {
-      id: "photos",
-      name: "Photos",
-      slug: "photos",
-    },
-    {
-      id: "shows",
-      name: "Shows",
-      slug: "shows",
-    },
-    ...sortedShows.map((show) => ({
-      id: show.id,
-      name: show.name,
-      slug: show.slug,
-    })),
-  ];
+  const organizedShowData = useMemo(
+    () => [
+      {
+        id: "photos",
+        name: "Photos",
+        slug: "photos",
+      },
+      {
+        id: "shows",
+        name: "Shows",
+        slug: "shows",
+      },
+      ...(sortedShows
+        ? sortedShows.map((show) => ({
+            id: show.id,
+            name: show.name,
+            slug: show.slug,
+          }))
+        : []),
+    ],
+    [sortedShows]
+  );
   return (
     <div className="sm:display-none flex flex-row items-center gap-2">
       {organizedShowData?.map((show, index) => (
         <div key={show.id}>
-          <a
+          <Link
             className="text-black underline"
             // we want the href to be the slug of the show, and all the slugs before it
             // so if we have /shows/2021/summer-classic, the array will be ["shows", "2021", "summer-classic"]
@@ -43,7 +52,7 @@ export const DynamicShowNameBreadcrumb = ({
               .join("/")}`}
           >
             {show.name}
-          </a>
+          </Link>
           {index !== organizedShowData.length - 1 && " > "}
         </div>
       ))}

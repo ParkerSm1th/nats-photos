@@ -1,11 +1,11 @@
-import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { type User, type UserRole } from "@prisma/client";
 
 import type { GetServerSidePropsContext } from "next";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import EmailProvider from "next-auth/providers/email";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -18,6 +18,7 @@ declare module "next-auth" {
     user: DefaultSession["user"] & {
       id: string;
       name: string;
+      role: string;
     };
   }
 
@@ -29,21 +30,28 @@ declare module "next-auth" {
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: ({ session, user }) => {
+      const safeUser = user as User;
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          role: safeUser.role as UserRole,
+        },
+      };
+    },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    EmailProvider({
+      server: process.env.EMAIL_SERVER,
+      from: process.env.EMAIL_FROM,
     }),
   ],
+
+  debug: true,
 };
 
 /**

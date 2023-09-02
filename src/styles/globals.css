@@ -4,7 +4,7 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: #fff 0% 100%;
     --foreground: 222.2 84% 4.9%;
  
     --muted: 210 40% 96.1%;
@@ -74,5 +74,35 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.home {
+  font-family: 'Raleway', sans-serif;
+}
+
+.hero-bg {
+  background-image: url('https://res.cloudinary.com/dqdjvho5d/image/upload/v1691811621/hero_jinhly.jpg');
+  background-position: center;
+  background-size: cover;
+  animation: fadein 2s;
+}
+
+@media screen and (max-width: 650px) {
+  .hero-bg {
+    background-position-x: calc(50% - 130px);
   }
 }

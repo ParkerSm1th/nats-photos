@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 
+import { Show } from "@/common/types";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,8 +14,10 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+import { cn, isAdmin } from "@/lib/utils";
 import { api } from "@/utils/api";
+import { faCrown } from "@fortawesome/pro-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { signIn, signOut, useSession } from "next-auth/react";
 import SmallLogo from "../../../public/images/SmallLogo.png";
 import {
@@ -62,28 +65,31 @@ export function NavBar() {
                     return <FakeListItem key={i} />;
                   })
                 ) : shows.data ? (
-                  shows.data?.map((show) => {
+                  shows.data?.map((show: Show) => {
                     return (
-                      <ListItem
-                        key={show.id}
+                      <Link
                         href={`/photos/shows/${show.slug}`}
-                        title={show.name}
+                        key={show.id}
+                        passHref
+                        legacyBehavior
                       >
-                        {show.children && (
-                          <div className="flex flex-row items-center gap-2">
-                            {show.children.map((child) => (
-                              <div key={child.id}>
-                                <a
-                                  className="text-black underline"
-                                  href={`/photos/shows/${show.slug}/${child.slug}`}
-                                >
-                                  {child.name}
-                                </a>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </ListItem>
+                        <ListItem title={show.name}>
+                          {show.children && (
+                            <div className="flex flex-row items-center gap-2">
+                              {show.children.map((child: Show) => (
+                                <div key={child.id}>
+                                  <Link
+                                    href={`/photos/shows/${show.slug}`}
+                                    className="text-black underline"
+                                  >
+                                    {child.name}
+                                  </Link>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </ListItem>
+                      </Link>
                     );
                   })
                 ) : (
@@ -107,7 +113,12 @@ export function NavBar() {
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/photos/people" legacyBehavior passHref>
+            <Link
+              href={"/photos/people"}
+              legacyBehavior
+              passHref
+              className={navigationMenuTriggerStyle()}
+            >
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                 People
               </NavigationMenuLink>
@@ -125,8 +136,14 @@ export function NavBar() {
             <>
               <Menubar>
                 <MenubarMenu>
-                  <MenubarTrigger className="cursor-pointer focus:bg-transparent data-[state=open]:bg-transparent">
-                    {session.data.user.name}
+                  <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
+                    {session.data.user.name ?? session.data.user.email}{" "}
+                    {isAdmin(session.data.user) && (
+                      <FontAwesomeIcon
+                        icon={faCrown}
+                        className="h-3 w-3 text-purple-500"
+                      />
+                    )}
                   </MenubarTrigger>
                   <MenubarContent className="mr-2">
                     <Link href="/photos/account">
@@ -141,6 +158,20 @@ export function NavBar() {
                       </MenubarSubContent>
                     </MenubarSub>
                     <MenubarSeparator />
+                    {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
+                    {isAdmin(session.data.user) && (
+                      <>
+                        <MenubarSub>
+                          <MenubarSubTrigger>Admin</MenubarSubTrigger>
+                          <MenubarSubContent>
+                            <MenubarItem>Photos</MenubarItem>
+                            <MenubarItem>Shows</MenubarItem>
+                            <MenubarItem>Users</MenubarItem>
+                          </MenubarSubContent>
+                        </MenubarSub>
+                        <MenubarSeparator />
+                      </>
+                    )}
                     <MenubarItem onClick={() => void signOut()}>
                       Sign Out
                     </MenubarItem>
