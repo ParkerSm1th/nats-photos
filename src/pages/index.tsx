@@ -47,7 +47,7 @@ function MobileNav() {
         <Image src={SmallLogo} className="h-12 w-12 select-none" alt="logo" />
         {!isMenuOpen && (
           <div
-            className="h-4 w-4 text-white"
+            className="h-6 w-6 text-white"
             onClick={() => setIsMenuOpen(true)}
           >
             <FontAwesomeIcon icon={faBars} />
