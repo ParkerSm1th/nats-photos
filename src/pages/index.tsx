@@ -305,6 +305,16 @@ function Home() {
                       title: "Four Winds - Schooling Show",
                       link: "https://goo.gl/maps/bkGmkizy7A6A4Uww6",
                     },
+                    {
+                      date: new Date(2023, 8, 23),
+                      title: "Fox Hill",
+                      link: "https://goo.gl/maps/dXF2314tEEUqgP249",
+                    },
+                    {
+                      date: new Date(2023, 8, 24),
+                      title: "Fox Hill",
+                      link: "https://goo.gl/maps/dXF2314tEEUqgP249",
+                    },
                   ]}
                 />
               </div>

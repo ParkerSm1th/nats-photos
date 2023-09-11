@@ -109,12 +109,40 @@ function Calendar({
         ),
       }}
       onDayClick={handleDayClick}
-      modifiers={{ booked: bookedDays.map((day) => day.date) }}
+      modifiers={{
+        booked: bookedDays.map((day) => day.date),
+        booked_range_start: bookedDays
+          .filter((day, index) => {
+            if (bookedDays[index + 1]?.title === day.title) return true;
+          })
+          .map((day) => day.date),
+        booked_range_end: bookedDays
+          .filter((day, index) => {
+            if (bookedDays[index - 1]?.title === day.title) return true;
+          })
+          .map((day) => day.date),
+      }}
       modifiersStyles={{
         booked: {
           color: "var(--color-accent-foreground)",
           backgroundColor: "var(--color-accent)",
           border: "2px solid #a855f7",
+          outline: "none",
+        },
+        booked_range_start: {
+          color: "var(--color-accent-foreground)",
+          backgroundColor: "var(--color-accent)",
+          border: "2px solid #a855f7",
+          borderRight: "none",
+          borderRadius: "4px 0 0 4px",
+          outline: "none",
+        },
+        booked_range_end: {
+          color: "var(--color-accent-foreground)",
+          backgroundColor: "var(--color-accent)",
+          border: "2px solid #a855f7",
+          borderLeft: "none",
+          borderRadius: "0 4px 4px 0",
           outline: "none",
         },
       }}
