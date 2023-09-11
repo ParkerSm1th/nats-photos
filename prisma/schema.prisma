@@ -33,10 +33,14 @@ model Show {
 
 model Photo {
     id        String   @id @default(uuid())
+    lowS3Key  String   @db.Text
+    highS3Key String   @db.Text
     showId    String
     show      Show     @relation(fields: [showId], references: [id], onDelete: Cascade)
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
+
+    @@index([showId])
 }
 
 enum UserRole {

@@ -1,6 +1,9 @@
 import { type Show as PrismaShow, type Show } from "@prisma/client";
 import { z } from "zod";
+import { S3Service } from "../services/S3Service/S3Service";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
+
+const s3Service = new S3Service("natalies-photos");
 
 export const showRouter = createTRPCRouter({
   delete: adminProcedure
@@ -120,4 +123,10 @@ const fromPrisma = (show: ShowWithChildren, children = true): Show => {
       children: show.children?.map((s) => fromPrisma(s, false)),
     }),
   };
+};
+
+export const config = {
+  api: {
+    responseLimit: false,
+  },
 };
