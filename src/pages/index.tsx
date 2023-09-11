@@ -157,7 +157,7 @@ function Home() {
         "https://res.cloudinary.com/dqdjvho5d/image/upload/v1693633326/DSC04427_fggidz.jpg",
     },
     {
-      title: "Sadie & Thor",
+      title: "Hadley & Gracie",
       showName: "CO Horse Park, 2023",
       image:
         "https://res.cloudinary.com/dqdjvho5d/image/upload/v1693633326/DSC04256_rlmshz.jpg",
@@ -171,7 +171,7 @@ function Home() {
   const shouldShowNext =
     selectedImageIndex !== -1 && selectedImageIndex < portfolioItems.length - 1;
   const shouldShowPrev = selectedImageIndex !== -1 && selectedImageIndex > 0;
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
 
   const [expanded, setExpanded] = useState(false);
 
@@ -294,14 +294,12 @@ function Home() {
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(date) => {
+                    if (!date) return;
+                    setDate(date);
+                  }}
                   className="rounded-md border"
                   bookedDays={[
-                    {
-                      date: new Date(2023, 8, 16),
-                      title: "Four Winds - Schooling Show",
-                      link: "https://goo.gl/maps/bkGmkizy7A6A4Uww6",
-                    },
                     {
                       date: new Date(2023, 8, 17),
                       title: "Four Winds - Schooling Show",
