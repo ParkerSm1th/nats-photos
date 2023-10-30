@@ -14,11 +14,9 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { cn, isAdmin } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { api } from "@/utils/api";
-import { faCrown } from "@fortawesome/pro-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { SignOutButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import SmallLogo from "../../../public/images/SmallLogo.png";
 import {
   Menubar,
@@ -32,14 +30,13 @@ import {
   MenubarTrigger,
 } from "../ui/ui/menubar";
 import { Skeleton } from "../ui/ui/skeleton";
-import { Spinner } from "../ui/ui/spinner";
 
 export function NavBar() {
   const shows = api.shows.getAll.useQuery({
     limit: 5,
     orderByStartDate: "desc",
   });
-  const session = useSession();
+  const { isLoaded, user } = useUser();
 
   return (
     <NavigationMenu className="flex w-screen min-w-full justify-between border p-2">
@@ -126,40 +123,40 @@ export function NavBar() {
           </NavigationMenuItem>
         </NavigationMenuList>
       </div>
-      <div>
-        <NavigationMenuList>
-          {session.status == "loading" ? (
-            <NavigationMenuItem className="text-small border">
-              <Spinner className="h-8 w-8 p-1" />
-            </NavigationMenuItem>
-          ) : session.data?.user ? (
-            <>
-              <Menubar>
-                <MenubarMenu>
-                  <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
-                    {session.data.user.name ?? session.data.user.email}{" "}
-                    {isAdmin(session.data.user) && (
-                      <FontAwesomeIcon
-                        icon={faCrown}
-                        className="h-3 w-3 text-purple-500"
-                      />
-                    )}
-                  </MenubarTrigger>
-                  <MenubarContent className="mr-2">
-                    <Link href="/photos/account">
-                      <MenubarItem>Account</MenubarItem>
-                    </Link>
-                    <MenubarSub>
-                      <MenubarSubTrigger>My Favorites</MenubarSubTrigger>
-                      <MenubarSubContent>
-                        <MenubarItem>Riders</MenubarItem>
-                        <MenubarItem>Horses</MenubarItem>
-                        <MenubarItem>Shows</MenubarItem>
-                      </MenubarSubContent>
-                    </MenubarSub>
-                    <MenubarSeparator />
-                    {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
-                    {isAdmin(session.data.user) && (
+      <SignedIn>
+        <div>
+          <NavigationMenuList>
+            <Menubar>
+              <MenubarMenu>
+                <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
+                  {user?.imageUrl && (
+                    <Image
+                      src={user?.imageUrl}
+                      height={20}
+                      width={20}
+                      style={{
+                        borderRadius: "100%",
+                      }}
+                      alt="Your PFP"
+                    />
+                  )}
+                  Your Account
+                </MenubarTrigger>
+                <MenubarContent className="mr-2">
+                  <Link href="/photos/account">
+                    <MenubarItem>Account</MenubarItem>
+                  </Link>
+                  <MenubarSub>
+                    <MenubarSubTrigger>My Favorites</MenubarSubTrigger>
+                    <MenubarSubContent>
+                      <MenubarItem>Riders</MenubarItem>
+                      <MenubarItem>Horses</MenubarItem>
+                      <MenubarItem>Shows</MenubarItem>
+                    </MenubarSubContent>
+                  </MenubarSub>
+                  <MenubarSeparator />
+                  {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
+                  {/* {isAdmin(session.data.user) && (
                       <>
                         <MenubarSub>
                           <MenubarSubTrigger>Admin</MenubarSubTrigger>
@@ -171,26 +168,26 @@ export function NavBar() {
                         </MenubarSub>
                         <MenubarSeparator />
                       </>
-                    )}
-                    <MenubarItem onClick={() => void signOut()}>
-                      Sign Out
-                    </MenubarItem>
-                  </MenubarContent>
-                </MenubarMenu>
-              </Menubar>
-            </>
-          ) : (
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
-                onClick={() => void signIn()}
-              >
-                Login
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          )}
-        </NavigationMenuList>
-      </div>
+                    )} */}
+                  <SignOutButton>
+                    <MenubarItem>Sign Out</MenubarItem>
+                  </SignOutButton>
+                </MenubarContent>
+              </MenubarMenu>
+            </Menubar>
+          </NavigationMenuList>
+        </div>
+      </SignedIn>
+      <SignedOut>
+        <NavigationMenuItem>
+          <NavigationMenuLink
+            className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
+            href={"/auth"}
+          >
+            Login
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </SignedOut>
     </NavigationMenu>
   );
 }

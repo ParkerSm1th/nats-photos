@@ -3,9 +3,9 @@ import { api } from "@/utils/api";
 
 import "@/styles/globals.css";
 
+import { ClerkProvider } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
 import type { AppType } from "next/app";
 import Head from "next/head";
 
@@ -55,9 +55,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
           rel="stylesheet"
         ></link>
       </Head>
-      <SessionProvider session={session}>
-        {getLayout(<Component {...pageProps} />)}
-      </SessionProvider>
+      <ClerkProvider>{getLayout(<Component {...pageProps} />)}</ClerkProvider>
     </>
   );
 };

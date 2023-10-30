@@ -11,6 +11,7 @@
     "setup_db": "npx prisma db push"
   },
   "dependencies": {
+    "@clerk/nextjs": "^4.26.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.2",
