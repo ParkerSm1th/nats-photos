@@ -16,7 +16,13 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { api } from "@/utils/api";
-import { SignOutButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import {
+  ClerkLoading,
+  SignOutButton,
+  SignedIn,
+  SignedOut,
+  useUser,
+} from "@clerk/nextjs";
 import SmallLogo from "../../../public/images/SmallLogo.png";
 import {
   Menubar,
@@ -30,6 +36,7 @@ import {
   MenubarTrigger,
 } from "../ui/ui/menubar";
 import { Skeleton } from "../ui/ui/skeleton";
+import { Spinner } from "../ui/ui/spinner";
 
 export function NavBar() {
   const shows = api.shows.getAll.useQuery({
@@ -39,127 +46,134 @@ export function NavBar() {
   const { isLoaded, user } = useUser();
 
   return (
-    <NavigationMenu className="flex w-screen min-w-full justify-between border p-2">
-      <div>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <Link href="/" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                <Image src={SmallLogo} alt="Logo" height={30} width={30} />
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
-              Shows
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <p className="pb-0 pl-6 pt-2 font-semibold">Recent Shows</p>
-              <ul className="grid gap-3 p-6 pt-1 md:w-[400px] lg:w-[500px] lg:grid-cols-[1fr_1fr]">
-                {shows.isLoading ? (
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                  [...Array(4)].map((_, i) => {
-                    return <FakeListItem key={i} />;
-                  })
-                ) : shows.data ? (
-                  shows.data?.map((show: Show) => {
-                    return (
-                      <Link
-                        href={`/photos/shows/${show.slug}`}
-                        key={show.id}
-                        passHref
-                        legacyBehavior
-                      >
-                        <ListItem title={show.name}>
-                          {show.children && (
-                            <div className="flex flex-row items-center gap-2">
-                              {show.children.map((child: Show) => (
-                                <div key={child.id}>
-                                  <Link
-                                    href={`/photos/shows/${show.slug}`}
-                                    className="text-black underline"
-                                  >
-                                    {child.name}
-                                  </Link>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </ListItem>
-                      </Link>
-                    );
-                  })
-                ) : (
-                  <div>No Recent Shows</div>
-                )}
-              </ul>
-              <div className="m-auto mb-2 text-center">
-                <Link
-                  href="/photos/shows"
-                  legacyBehavior
-                  passHref
-                  className="m-auto"
-                >
-                  <NavigationMenuLink
-                    className={`center ${navigationMenuTriggerStyle()}`}
-                  >
-                    View All Shows
-                  </NavigationMenuLink>
-                </Link>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link
-              href={"/photos/people"}
-              legacyBehavior
-              passHref
-              className={navigationMenuTriggerStyle()}
-            >
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                People
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </div>
-      <SignedIn>
+    <>
+      <NavigationMenu className="flex w-screen min-w-full justify-between border p-2">
         <div>
           <NavigationMenuList>
-            <Menubar>
-              <MenubarMenu>
-                <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
-                  {user?.imageUrl && (
-                    <Image
-                      src={user?.imageUrl}
-                      height={20}
-                      width={20}
-                      style={{
-                        borderRadius: "100%",
-                      }}
-                      alt="Your PFP"
-                    />
+            <NavigationMenuItem>
+              <Link href="/" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <Image src={SmallLogo} alt="Logo" height={30} width={30} />
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
+                Shows
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <p className="pb-0 pl-6 pt-2 font-semibold">Recent Shows</p>
+                <ul className="grid gap-3 p-6 pt-1 md:w-[400px] lg:w-[500px] lg:grid-cols-[1fr_1fr]">
+                  {shows.isLoading ? (
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    [...Array(4)].map((_, i) => {
+                      return <FakeListItem key={i} />;
+                    })
+                  ) : shows.data ? (
+                    shows.data?.map((show: Show) => {
+                      return (
+                        <Link
+                          href={`/photos/shows/${show.slug}`}
+                          key={show.id}
+                          passHref
+                          legacyBehavior
+                        >
+                          <ListItem title={show.name}>
+                            {show.children && (
+                              <div className="flex flex-row items-center gap-2">
+                                {show.children.map((child: Show) => (
+                                  <div key={child.id}>
+                                    <Link
+                                      href={`/photos/shows/${show.slug}`}
+                                      className="text-black underline"
+                                    >
+                                      {child.name}
+                                    </Link>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </ListItem>
+                        </Link>
+                      );
+                    })
+                  ) : (
+                    <div>No Recent Shows</div>
                   )}
-                  Your Account
-                </MenubarTrigger>
-                <MenubarContent className="mr-2">
-                  <Link href="/photos/account">
-                    <MenubarItem>Account</MenubarItem>
+                </ul>
+                <div className="m-auto mb-2 text-center">
+                  <Link
+                    href="/photos/shows"
+                    legacyBehavior
+                    passHref
+                    className="m-auto"
+                  >
+                    <NavigationMenuLink
+                      className={`center ${navigationMenuTriggerStyle()}`}
+                    >
+                      View All Shows
+                    </NavigationMenuLink>
                   </Link>
-                  <Link href="/auth/manage">
-                    <MenubarItem>Security</MenubarItem>
-                  </Link>
-                  <MenubarSub>
-                    <MenubarSubTrigger>My Favorites</MenubarSubTrigger>
-                    <MenubarSubContent>
-                      <MenubarItem>Riders</MenubarItem>
-                      <MenubarItem>Horses</MenubarItem>
-                      <MenubarItem>Shows</MenubarItem>
-                    </MenubarSubContent>
-                  </MenubarSub>
-                  <MenubarSeparator />
-                  {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
-                  {/* {isAdmin(session.data.user) && (
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link
+                href={"/photos/people"}
+                legacyBehavior
+                passHref
+                className={navigationMenuTriggerStyle()}
+              >
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  People
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </div>
+        <SignedIn>
+          <div>
+            <NavigationMenuList>
+              <Menubar>
+                <MenubarMenu>
+                  <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
+                    {user?.imageUrl && (
+                      <Image
+                        src={user?.imageUrl}
+                        height={20}
+                        width={20}
+                        style={{
+                          borderRadius: "100%",
+                        }}
+                        alt="Your PFP"
+                      />
+                    )}
+                    Your Account
+                  </MenubarTrigger>
+                  <MenubarContent className="mr-2">
+                    <Link href="/photos/account">
+                      <MenubarItem>Account</MenubarItem>
+                    </Link>
+                    <Link
+                      href={
+                        process.env.NODE_ENV == "development"
+                          ? "https://big-sloth-75.accounts.dev/user"
+                          : "https://accounts.natalielockhartphotos.com/user"
+                      }
+                    >
+                      <MenubarItem>Security</MenubarItem>
+                    </Link>
+                    <MenubarSub>
+                      <MenubarSubTrigger>My Favorites</MenubarSubTrigger>
+                      <MenubarSubContent>
+                        <MenubarItem>Riders</MenubarItem>
+                        <MenubarItem>Horses</MenubarItem>
+                        <MenubarItem>Shows</MenubarItem>
+                      </MenubarSubContent>
+                    </MenubarSub>
+                    <MenubarSeparator />
+                    {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
+                    {/* {isAdmin(session.data.user) && (
                       <>
                         <MenubarSub>
                           <MenubarSubTrigger>Admin</MenubarSubTrigger>
@@ -172,26 +186,32 @@ export function NavBar() {
                         <MenubarSeparator />
                       </>
                     )} */}
-                  <SignOutButton>
-                    <MenubarItem>Sign Out</MenubarItem>
-                  </SignOutButton>
-                </MenubarContent>
-              </MenubarMenu>
-            </Menubar>
-          </NavigationMenuList>
-        </div>
-      </SignedIn>
-      <SignedOut>
-        <NavigationMenuItem>
+                    <SignOutButton>
+                      <MenubarItem>Sign Out</MenubarItem>
+                    </SignOutButton>
+                  </MenubarContent>
+                </MenubarMenu>
+              </Menubar>
+            </NavigationMenuList>
+          </div>
+        </SignedIn>
+        <SignedOut>
           <NavigationMenuLink
             className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
             href={"/auth"}
           >
             Login
           </NavigationMenuLink>
-        </NavigationMenuItem>
-      </SignedOut>
-    </NavigationMenu>
+        </SignedOut>
+        <ClerkLoading>
+          <NavigationMenuLink
+            className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
+          >
+            <Spinner className="h-8 w-8 p-1" />
+          </NavigationMenuLink>
+        </ClerkLoading>
+      </NavigationMenu>
+    </>
   );
 }
 
