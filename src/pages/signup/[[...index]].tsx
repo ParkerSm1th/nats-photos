@@ -1,17 +1,14 @@
-import { RootLayout } from "@/components/global/Layout";
 import { SignUp } from "@clerk/nextjs";
-import { ReactElement } from "react";
 
-function AuthSignUp() {
+export default function Page() {
   return (
-    <div className="h-100 flex h-screen w-full items-center justify-center bg-white">
-      <SignUp path="/signup" redirectUrl="/photos" signInUrl="/sign-in" />
+    <div className="h-100 flex w-full items-center justify-center bg-white">
+      <SignUp
+        path="/signup"
+        signInUrl="/sign-in"
+        routing="path"
+        key={"signup"}
+      />
     </div>
   );
 }
-
-AuthSignUp.getLayout = function getLayout(page: ReactElement) {
-  return <RootLayout>{page}</RootLayout>;
-};
-
-export default AuthSignUp;
