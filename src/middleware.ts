@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 const publicPaths = [
   "/",
   "/sign-in*",
-  "/sign-up*",
+  "/signup*",
   "/api/trpc/shows*",
   "/photos/shows*",
   "/photos",
