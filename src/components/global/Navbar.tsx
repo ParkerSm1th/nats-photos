@@ -146,6 +146,9 @@ export function NavBar() {
                   <Link href="/photos/account">
                     <MenubarItem>Account</MenubarItem>
                   </Link>
+                  <Link href="/auth/manage">
+                    <MenubarItem>Security</MenubarItem>
+                  </Link>
                   <MenubarSub>
                     <MenubarSubTrigger>My Favorites</MenubarSubTrigger>
                     <MenubarSubContent>
