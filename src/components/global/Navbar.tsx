@@ -198,7 +198,7 @@ export function NavBar() {
         <SignedOut>
           <NavigationMenuLink
             className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
-            href={"/auth"}
+            href={"/sign-in"}
           >
             Login
           </NavigationMenuLink>
