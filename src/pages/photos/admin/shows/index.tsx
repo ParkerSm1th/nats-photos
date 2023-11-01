@@ -4,8 +4,8 @@ import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
 import { Show } from "@prisma/client";
 import { useState } from "react";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { columns } from "../../../../components/admin/columns";
+import { DataTable } from "../../../../components/admin/data-table";
 
 export default function Shows() {
   const { data, isLoading } = api.shows.getAll.useQuery({
