@@ -26,7 +26,7 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { prisma } from "../db";
 
 interface AuthContext {
-  auth: SignedInAuthObject | SignedOutAuthObject;
+  auth: SignedInAuthObject | SignedOutAuthObject | null;
 }
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use
@@ -72,7 +72,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 
 // check if the user is signed in, otherwise through a UNAUTHORIZED CODE
 const isAuthed = t.middleware(async ({ next, ctx }) => {
-  if (!ctx.auth.userId) {
+  if (!ctx.auth || !ctx.auth.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
@@ -87,7 +87,7 @@ const isAuthed = t.middleware(async ({ next, ctx }) => {
 });
 
 const isAdminUser = t.middleware(async ({ next, ctx }) => {
-  if (!ctx.auth.userId) {
+  if (!ctx.auth || !ctx.auth.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 

@@ -74,7 +74,7 @@ export async function getServerSideProps(
 ) {
   const ssg = createServerSideHelpers({
     router: appRouter,
-    ctx: { prisma, session: null },
+    ctx: { prisma, auth: null },
     transformer: superjson,
   });
 
