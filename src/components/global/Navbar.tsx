@@ -14,7 +14,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+import { cn, isAdmin } from "@/lib/utils";
 import { api } from "@/utils/api";
 import {
   ClerkLoading,
@@ -43,7 +43,7 @@ export function NavBar() {
     limit: 5,
     orderByStartDate: "desc",
   });
-  const { isLoaded, user } = useUser();
+  const { user } = useUser();
 
   return (
     <>
@@ -84,7 +84,7 @@ export function NavBar() {
                                 {show.children.map((child: Show) => (
                                   <div key={child.id}>
                                     <Link
-                                      href={`/photos/shows/${show.slug}`}
+                                      href={`/photos/shows/${show.slug}/${child.slug}`}
                                       className="text-black underline"
                                     >
                                       {child.name}
@@ -173,19 +173,19 @@ export function NavBar() {
                     </MenubarSub>
                     <MenubarSeparator />
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
-                    {/* {isAdmin(session.data.user) && (
+                    {user?.publicMetadata && isAdmin(user.publicMetadata) && (
                       <>
                         <MenubarSub>
                           <MenubarSubTrigger>Admin</MenubarSubTrigger>
                           <MenubarSubContent>
-                            <MenubarItem>Photos</MenubarItem>
-                            <MenubarItem>Shows</MenubarItem>
-                            <MenubarItem>Users</MenubarItem>
+                            <Link href="/photos/admin/shows">
+                              <MenubarItem>Shows</MenubarItem>
+                            </Link>
                           </MenubarSubContent>
                         </MenubarSub>
                         <MenubarSeparator />
                       </>
-                    )} */}
+                    )}
                     <SignOutButton>
                       <MenubarItem>Sign Out</MenubarItem>
                     </SignOutButton>

@@ -3,6 +3,7 @@ import { api } from "@/utils/api";
 
 import "@/styles/globals.css";
 
+import { Toaster } from "@/components/ui/ui/toaster";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { Session } from "next-auth";
@@ -56,6 +57,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
         ></link>
       </Head>
       <ClerkProvider>{getLayout(<Component {...pageProps} />)}</ClerkProvider>
+      <Toaster />
     </>
   );
 };

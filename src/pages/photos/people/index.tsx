@@ -1,3 +1,8 @@
 export default function ShowHome() {
-  return <>People Home</>;
+  return (
+    <>
+      {/* <CheckoutButton amount={1000} /> */}
+      People Home
+    </>
+  );
 }

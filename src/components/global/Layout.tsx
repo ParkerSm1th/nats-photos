@@ -12,7 +12,7 @@ export const DashboardLayout = ({
   return (
     <div>
       <NavBar />
-      <div className="mt-4">{children}</div>
+      <div className="mt-4 px-8">{children}</div>
     </div>
   );
 };

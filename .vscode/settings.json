@@ -1,5 +1,3 @@
-// remove unused deps
-// Path: package.json
 {
     "editor": {
         "codeActionsOnSave": {

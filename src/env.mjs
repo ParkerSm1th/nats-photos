@@ -25,6 +25,10 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string().min(1),
     EMAIL_SERVER: z.string().min(1),
     EMAIL_FROM: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().min(1),
+    STRIPE_SIGNING_SECRET: z.string().min(1),
+    NEXT_PUBLIC_ORIGIN: z.string().min(1),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
   },
 
   /**
@@ -33,6 +37,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
   },
 
@@ -49,6 +54,11 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_FROM: process.env.EMAIL_FROM,
+    NEXT_PUBLIC_ORIGIN: process.env.NEXT_PUBLIC_ORIGIN,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_SIGNING_SECRET: process.env.STRIPE_SIGNING_SECRET,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

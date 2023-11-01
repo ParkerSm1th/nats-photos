@@ -35,6 +35,7 @@ function Calendar({
   };
 
   const footer = React.useMemo(() => {
+    if (!bookedDays.length) return null;
     if (bookedDaysAsDates.includes(selectedDay)) {
       const bookedDay = bookedDays.find(
         (day) => day.date.toString() === selectedDay

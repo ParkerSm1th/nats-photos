@@ -1,6 +1,6 @@
 import { prisma } from "@/server/db";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { type User, type UserRole } from "@prisma/client";
+import { type User } from "@prisma/client";
 
 import type { GetServerSidePropsContext } from "next";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
           ...session.user,
           id: user.id,
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          role: safeUser.role as UserRole,
+          role: safeUser.role,
         },
       };
     },

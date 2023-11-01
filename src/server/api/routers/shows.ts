@@ -1,8 +1,39 @@
 import { type Show as PrismaShow, type Show } from "@prisma/client";
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 
 export const showRouter = createTRPCRouter({
+  delete: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const show = await ctx.prisma.show.delete({
+        where: { id: input.id },
+      });
+      return fromPrisma(show);
+    }),
+  create: adminProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        location: z.string(),
+        startDate: z.string(),
+        endDate: z.string().optional(),
+        parentId: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const show = await ctx.prisma.show.create({
+        data: {
+          name: input.name,
+          slug: input.name.toLowerCase().replace(/ /g, "-"),
+          location: input.location,
+          startDate: input.startDate,
+          endDate: input.endDate,
+          parentId: input.parentId,
+        },
+      });
+      return fromPrisma(show);
+    }),
   getAll: publicProcedure
     .input(
       z.object({
