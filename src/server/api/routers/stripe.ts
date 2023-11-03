@@ -30,6 +30,7 @@ export const stripeRouter = createTRPCRouter({
           },
           quantity: 1,
         })),
+        allow_promotion_codes: true,
         mode: "payment",
         success_url: `${origin}/photos/success`,
         cancel_url: `${origin}/photos/cart`,
