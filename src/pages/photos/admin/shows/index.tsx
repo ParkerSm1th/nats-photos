@@ -3,6 +3,7 @@ import { NewShowDialog } from "@/components/shows/NewShowDialog";
 import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
 import { Show } from "@prisma/client";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { columns } from "../../../../components/admin/columns";
 import { DataTable } from "../../../../components/admin/data-table";
@@ -16,6 +17,7 @@ export default function Shows() {
   const [showToDelete, setShowToDelete] = useState<Show | null>(null);
   const deleteShow = api.shows.delete.useMutation();
   const utils = api.useContext();
+  const router = useRouter();
 
   const [newShowDialogOpen, setNewShowDialogOpen] = useState(false);
 
@@ -31,6 +33,7 @@ export default function Shows() {
                 setShowToDelete(show);
                 setIsDeleteOpen(true);
               },
+              router,
             })}
             data={data ?? []}
             onNewClick={() => {

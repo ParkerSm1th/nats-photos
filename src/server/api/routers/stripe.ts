@@ -1,3 +1,4 @@
+import { PRICE_PER_PHOTO } from "@/common/constants";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { Stripe } from "stripe";
 import { z } from "zod";
@@ -6,28 +7,35 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const origin = process.env.NEXT_PUBLIC_ORIGIN!;
 export const stripeRouter = createTRPCRouter({
   createCheckoutSession: protectedProcedure
-    .input(z.object({ amount: z.number() }))
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            id: z.string(),
+            showName: z.string(),
+          })
+        ),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              product_data: {
-                name: "Photos",
-              },
-              unit_amount: input.amount * 100,
+        line_items: input.items.map((item) => ({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Photo from ${item.showName}`,
             },
-            quantity: 1,
+            unit_amount: PRICE_PER_PHOTO * 100,
           },
-        ],
+          quantity: 1,
+        })),
         mode: "payment",
-        success_url: `${origin}/success`,
-        cancel_url: `${origin}/`,
+        success_url: `${origin}/photos/success`,
+        cancel_url: `${origin}/photos/cart`,
         metadata: {
           userId: ctx.auth.userId,
-          chargeId: "456",
+          photos: JSON.stringify(input.items),
         },
       });
       return { sessionId: session.id };

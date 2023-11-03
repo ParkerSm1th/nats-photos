@@ -11,6 +11,7 @@ import type { ReactElement } from "react";
 import { useState } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
+import { api } from "@/utils/api";
 import { faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { faBars, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { AnimatePresence, motion } from "framer-motion";
@@ -118,7 +119,6 @@ function Nav() {
 function Home() {
   const isMobile = useIsMobile();
   const [selectedImage, setSelectedImage] = useState<string>("");
-
   const portfolioItems = [
     {
       title: "Maggie & Ravello",
@@ -177,6 +177,12 @@ function Home() {
 
   const itemsToShow = expanded ? portfolioItems : portfolioItems.slice(0, 6);
 
+  const { data, isLoading } = api.user.testPhoto.useQuery(undefined, {
+    refetchInterval: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  });
+
   return (
     <>
       <Head>
@@ -211,6 +217,9 @@ function Home() {
             <p className="pt-4 text-center font-bold">
               Currently based in Fort Collins, CO
             </p>
+          </div>
+          <div>
+            {!isLoading && data?.url && <img src={data.url} alt="image" />}
           </div>
           <div
             className="flex w-full flex-col items-center justify-center gap-4 pt-12"

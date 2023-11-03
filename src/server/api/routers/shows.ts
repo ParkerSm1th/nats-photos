@@ -1,6 +1,9 @@
 import { type Show as PrismaShow, type Show } from "@prisma/client";
 import { z } from "zod";
+import { S3Service } from "../services/S3Service/S3Service";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
+
+const s3Service = new S3Service("natalies-photos");
 
 export const showRouter = createTRPCRouter({
   delete: adminProcedure
@@ -33,6 +36,31 @@ export const showRouter = createTRPCRouter({
         },
       });
       return fromPrisma(show);
+    }),
+  getShow: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const show = await ctx.prisma.show.findUnique({
+        where: { id: input.id },
+      });
+      if (!show) return null;
+      const childShows = await ctx.prisma.show.findMany({
+        where: { parentId: input.id },
+        orderBy: { startDate: "asc" },
+      });
+      return {
+        ...show,
+        children: childShows,
+      };
+    }),
+  getShowChildren: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const shows = await ctx.prisma.show.findMany({
+        where: { parentId: input.id },
+        orderBy: { startDate: "desc" },
+      });
+      return shows.map((s) => fromPrisma(s));
     }),
   getAll: publicProcedure
     .input(
@@ -101,6 +129,34 @@ export const showRouter = createTRPCRouter({
       if (!rawShow) return null;
       return rawShow.name;
     }),
+  getShowBasicInfo: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const rawShow = await ctx.prisma.show.findUnique({
+        select: {
+          name: true,
+          parentId: true,
+        },
+        where: { id: input.id },
+      });
+      if (!rawShow) return null;
+      return rawShow;
+    }),
+  addPhoto: adminProcedure
+    .input(
+      z.object({
+        showId: z.string().uuid(),
+        photoId: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const photo = await ctx.prisma.photo.upsert({
+        where: { id: input.photoId },
+        update: {},
+        create: { id: input.photoId, showId: input.showId },
+      });
+      return photo;
+    }),
 });
 
 type ShowWithChildren = Partial<PrismaShow> & { children?: Show[] };
@@ -120,4 +176,10 @@ const fromPrisma = (show: ShowWithChildren, children = true): Show => {
       children: show.children?.map((s) => fromPrisma(s, false)),
     }),
   };
+};
+
+export const config = {
+  api: {
+    responseLimit: false,
+  },
 };

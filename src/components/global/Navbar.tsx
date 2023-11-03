@@ -37,13 +37,25 @@ import {
 } from "../ui/ui/menubar";
 import { Skeleton } from "../ui/ui/skeleton";
 import { Spinner } from "../ui/ui/spinner";
+import { useCart } from "@/providers/CartProvider";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShoppingCart } from "@fortawesome/pro-regular-svg-icons";
+import { CartIcon } from "./CartIcon";
 
 export function NavBar() {
-  const shows = api.shows.getAll.useQuery({
-    limit: 5,
-    orderByStartDate: "desc",
-  });
+  const shows = api.shows.getAll.useQuery(
+    {
+      limit: 5,
+      orderByStartDate: "desc",
+    },
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    }
+  );
   const { user } = useUser();
+  const { cart } = useCart();
 
   return (
     <>
@@ -131,9 +143,21 @@ export function NavBar() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </div>
-        <SignedIn>
-          <div>
-            <NavigationMenuList>
+        <div>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <Link
+                href={"/photos/cart"}
+                legacyBehavior
+                passHref
+                className={navigationMenuTriggerStyle()}
+              >
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <CartIcon size={cart.length} />
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <SignedIn>
               <Menubar>
                 <MenubarMenu>
                   <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
@@ -151,8 +175,8 @@ export function NavBar() {
                     Your Account
                   </MenubarTrigger>
                   <MenubarContent className="mr-2">
-                    <Link href="/photos/account">
-                      <MenubarItem>Account</MenubarItem>
+                    <Link href="/photos/account/purchases">
+                      <MenubarItem>Purchases</MenubarItem>
                     </Link>
                     <Link
                       href={
@@ -163,14 +187,14 @@ export function NavBar() {
                     >
                       <MenubarItem>Security</MenubarItem>
                     </Link>
-                    <MenubarSub>
+                    {/* <MenubarSub>
                       <MenubarSubTrigger>My Favorites</MenubarSubTrigger>
                       <MenubarSubContent>
                         <MenubarItem>Riders</MenubarItem>
                         <MenubarItem>Horses</MenubarItem>
                         <MenubarItem>Shows</MenubarItem>
                       </MenubarSubContent>
-                    </MenubarSub>
+                    </MenubarSub> */}
                     <MenubarSeparator />
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
                     {user?.publicMetadata && isAdmin(user.publicMetadata) && (
@@ -192,24 +216,24 @@ export function NavBar() {
                   </MenubarContent>
                 </MenubarMenu>
               </Menubar>
-            </NavigationMenuList>
-          </div>
-        </SignedIn>
-        <SignedOut>
-          <NavigationMenuLink
-            className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
-            href={"/sign-in"}
-          >
-            Login
-          </NavigationMenuLink>
-        </SignedOut>
-        <ClerkLoading>
-          <NavigationMenuLink
-            className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
-          >
-            <Spinner className="h-8 w-8 p-1" />
-          </NavigationMenuLink>
-        </ClerkLoading>
+            </SignedIn>
+            <SignedOut>
+              <NavigationMenuLink
+                className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
+                href={"/sign-in"}
+              >
+                Login
+              </NavigationMenuLink>
+            </SignedOut>
+            <ClerkLoading>
+              <NavigationMenuLink
+                className={`cursor-pointer ${navigationMenuTriggerStyle()} `}
+              >
+                <Spinner className="h-8 w-8 p-1" />
+              </NavigationMenuLink>
+            </ClerkLoading>
+          </NavigationMenuList>
+        </div>
       </NavigationMenu>
     </>
   );

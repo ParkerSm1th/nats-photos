@@ -51,10 +51,12 @@ export const NewShowDialog = ({
   className,
   open,
   onClose,
+  parentShowId,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
   open: boolean;
   onClose: () => void;
+  parentShowId?: string;
 }) => {
   const form = useForm<z.infer<typeof CreateSchema>>({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
@@ -70,6 +72,7 @@ export const NewShowDialog = ({
       location: data.location,
       startDate: data.dates.from.toISOString(),
       endDate: data.dates.to.toISOString(),
+      parentId: parentShowId,
     });
     await utils.shows.getAll.invalidate();
     onClose();

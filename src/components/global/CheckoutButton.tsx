@@ -1,7 +1,12 @@
+import { PRICE_PER_PHOTO } from "@/common/constants";
+import { HOSTNAME } from "@/lib/utils";
+import { useCart } from "@/providers/CartProvider";
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { api } from "@/utils/api";
+import { useAuth } from "@clerk/nextjs";
 import { loadStripe } from "@stripe/stripe-js";
+import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -12,12 +17,18 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
 
-const CheckoutButton = ({ amount }: { amount: number }) => {
+const CheckoutButton = () => {
   const router = useRouter();
+  const { userId } = useAuth();
+  const { cart } = useCart();
   const [loading, setLoading] = useState(false);
   const getCheckout = api.stripe.createCheckoutSession.useMutation();
 
   const handleCheckout = async () => {
+    if (!userId) {
+      await router.push(`/sign-in?redirect_url=${HOSTNAME()}/photos/cart`);
+      return;
+    }
     setLoading(true);
     try {
       const stripe = await stripePromise;
@@ -25,7 +36,10 @@ const CheckoutButton = ({ amount }: { amount: number }) => {
         throw new Error("Stripe.js hasn't loaded yet!");
       }
       const data = await getCheckout.mutateAsync({
-        amount,
+        items: cart.map((item) => ({
+          id: item.id,
+          showName: item.show.name,
+        })),
       });
       const { error } = await stripe.redirectToCheckout({
         sessionId: data.sessionId,
@@ -43,7 +57,10 @@ const CheckoutButton = ({ amount }: { amount: number }) => {
   };
 
   return (
-    <Button onClick={handleCheckout}>
+    <Button
+      onClick={cart.length === 0 ? () => null : handleCheckout}
+      disabled={cart.length === 0}
+    >
       <div
         style={{
           opacity: loading ? 1 : 0,
@@ -57,7 +74,7 @@ const CheckoutButton = ({ amount }: { amount: number }) => {
           opacity: loading ? 0 : 1,
         }}
       >
-        Checkout ${amount}
+        Checkout ${cart.length * PRICE_PER_PHOTO}
       </div>
     </Button>
   );

@@ -19,7 +19,7 @@ const config = {
     defaultLocale: "en",
   },
   images: {
-    domains: ["res.cloudinary.com", "img.clerk.com"],
+    domains: ["res.cloudinary.com", "img.clerk.com", "natalies-photos.s3.wasabisys.com"],
   },
 };
 
