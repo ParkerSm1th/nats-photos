@@ -1,38 +1,28 @@
 import { SpinnerPage } from "@/components/global/Spinner";
 import { DynamicShowNameBreadcrumb } from "@/components/shows/DynamicShowNameBreadcrumb";
-import { appRouter } from "@/server/api/root";
-import { prisma } from "@/server/db";
+import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
-import { createServerSideHelpers } from "@trpc/react-query/server";
-import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import superjson from "superjson";
 
-export default function Show(
-  props: InferGetServerSidePropsType<typeof getServerSideProps>
-) {
+export default function Show() {
   const router = useRouter();
-  const slugs = props.slug;
+  const slugs = router.query.slug as string[];
   if (!slugs) return null;
   const furthestRightSlug = slugs[slugs.length - 1];
   if (!furthestRightSlug) return null;
-  const show = api.shows.getShowBySlug.useQuery({
-    slug: furthestRightSlug,
-  });
-
   const showName = api.shows.getShowNameBySlug.useQuery({
     slug: furthestRightSlug,
   });
 
-  return !showName.data ? (
-    <div>Error</div>
+  const show = api.shows.getShowBySlug.useQuery({
+    slug: furthestRightSlug,
+  });
+
+  return showName.isLoading ? (
+    <Spinner />
   ) : (
     <>
-      <Head>
-        <title>{showName.data}</title>
-      </Head>
       <main className="flex flex-col items-center justify-center">
         <DynamicShowNameBreadcrumb slugs={slugs} />
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-8 ">
@@ -67,30 +57,4 @@ export default function Show(
       </main>
     </>
   );
-}
-
-export async function getServerSideProps(
-  context: GetServerSidePropsContext<{ slug: string[] }>
-) {
-  const ssg = createServerSideHelpers({
-    router: appRouter,
-    ctx: { prisma, auth: null },
-    transformer: superjson,
-  });
-
-  const slug = context.params?.slug;
-  if (!slug) throw new Error("No slug");
-  const furthestRightSlug = slug[slug.length - 1];
-
-  if (typeof furthestRightSlug !== "string") throw new Error("No slug");
-
-  await ssg.shows.getShowNameBySlug.prefetch({ slug: furthestRightSlug });
-  await ssg.shows.getShowsBySlug.prefetch(slug);
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      slug,
-    },
-  };
 }
