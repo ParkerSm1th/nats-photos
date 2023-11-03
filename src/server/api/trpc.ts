@@ -26,7 +26,7 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { prisma } from "../db";
 
 interface AuthContext {
-  auth: SignedInAuthObject | SignedOutAuthObject | null;
+  auth: SignedInAuthObject | SignedOutAuthObject;
 }
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use
