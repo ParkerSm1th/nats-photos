@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { prisma } from "@/server/db";
 import { buffer } from "micro";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import Stripe from "stripe";
@@ -15,7 +16,7 @@ const webhookSecret = process.env.STRIPE_SIGNING_SECRET!;
 
 type Metadata = {
   userId: string;
-  chargeId: string;
+  photos: string;
 };
 
 export default async function handler(
@@ -46,7 +47,19 @@ export default async function handler(
         const completedEvent = event.data.object as Stripe.Checkout.Session & {
           metadata: Metadata;
         };
+        const { userId, photos } = completedEvent.metadata;
+        if (!photos) return res.send(200);
+        const photosParsed = JSON.parse(photos) as {
+          id: string;
+          showName: string;
+        }[];
         console.log("💰 Payment received!", completedEvent);
+        await prisma.purchases.createMany({
+          data: photosParsed.map((photo) => ({
+            userId,
+            photoId: photo.id,
+          })),
+        });
         break;
       default:
         console.log(`Unhandled event type ${event.type}`);

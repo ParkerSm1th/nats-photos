@@ -15,12 +15,15 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { type Show } from "@prisma/client";
 import { type ColumnDef } from "@tanstack/react-table";
+import type { NextRouter } from "next/router";
 
 export const columns: ({
   deleteShow,
+  router,
 }: {
   deleteShow: (show: Show) => void;
-}) => ColumnDef<Show>[] = ({ deleteShow }) => [
+  router: NextRouter;
+}) => ColumnDef<Show>[] = ({ deleteShow, router }) => [
   {
     id: "select",
     header: ({ table }) => (
@@ -80,6 +83,15 @@ export const columns: ({
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
+              onClick={async () => {
+                await router.push(`/photos/admin/shows/${show.id}`);
+              }}
+              className="cursor-pointer"
+            >
+              Manage
+            </DropdownMenuItem>
+            <DropdownMenuItem
               onClick={() =>
                 void navigator.clipboard.writeText(
                   `${window.location.origin}/photos/shows/${show.slug}`
@@ -88,14 +100,6 @@ export const columns: ({
               className="cursor-pointer"
             >
               Copy Show Link
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                console.log("Manage show");
-              }}
-              className="cursor-pointer"
-            >
-              View Show
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

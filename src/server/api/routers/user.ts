@@ -18,6 +18,37 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
+  getPurchases: protectedProcedure.query(async ({ ctx }) => {
+    const purchases = await ctx.prisma.purchases.findMany({
+      where: {
+        userId: ctx.auth.userId,
+      },
+    });
+    const photos = await ctx.prisma.photo.findMany({
+      where: {
+        id: {
+          in: purchases.map((purchase) => purchase.photoId),
+        },
+      },
+    });
+    const shows = await ctx.prisma.show.findMany({
+      where: {
+        id: {
+          in: photos.map((photo) => photo.showId),
+        },
+      },
+    });
+    return purchases.map((purchase) => {
+      const photo = photos.find((photo) => photo.id === purchase.photoId);
+      return {
+        ...purchase,
+        image:
+          "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/2_axc1ll.jpg",
+        show: shows.find((show) => show.id === photo?.showId),
+      };
+    });
+  }),
+
   testPhoto: publicProcedure.query(async () => {
     const s3Service = new S3Service("natalies-photos");
     const preSign = s3Service.getPresignedLink("med.jpeg", 60);

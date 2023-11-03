@@ -32,15 +32,26 @@ model Show {
 }
 
 model Photo {
-    id        String   @id @default(uuid())
-    lowS3Key  String   @db.Text
-    highS3Key String   @db.Text
+    id        String      @id @default(uuid())
     showId    String
-    show      Show     @relation(fields: [showId], references: [id], onDelete: Cascade)
+    show      Show        @relation(fields: [showId], references: [id], onDelete: Cascade)
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @default(now()) @updatedAt
+    Purchases Purchases[]
+
+    @@index([showId])
+}
+
+model Purchases {
+    id        String   @id @default(uuid())
+    photoId   String
+    photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+    userId    String
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
-    @@index([showId])
+    @@unique([photoId, userId])
+    @@index([photoId, userId])
 }
 
 enum UserRole {

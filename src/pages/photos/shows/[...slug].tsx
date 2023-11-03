@@ -1,5 +1,6 @@
 import { SpinnerPage } from "@/components/global/Spinner";
 import { DynamicShowNameBreadcrumb } from "@/components/shows/DynamicShowNameBreadcrumb";
+import { PhotoGallery } from "@/components/shows/PhotoGallery";
 import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
 import Link from "next/link";
@@ -29,30 +30,33 @@ export default function Show() {
           <h1 className="text-5xl font-extrabold tracking-tight text-black">
             {showName.data}
           </h1>
-          <div className="flex flex-row items-center gap-2">
-            {show.isLoading ? (
-              <SpinnerPage />
-            ) : (
-              <>
-                {show.data?.children && (
-                  <div className="flex flex-row items-center gap-2">
-                    {show.data?.children.map((child) => (
-                      <div key={child.id}>
-                        <Link
-                          className="text-black underline"
-                          href={`/photos/shows/${slugs.join("/")}/${
-                            child.slug
-                          }`}
-                        >
-                          {child.name}
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          {show.isLoading || !show.data ? (
+            <SpinnerPage />
+          ) : (
+            <>
+              <div className="flex flex-row items-center gap-2">
+                <>
+                  {show.data?.children && (
+                    <div className="flex flex-row items-center gap-2">
+                      {show.data?.children.map((child) => (
+                        <div key={child.id}>
+                          <Link
+                            className="text-black underline"
+                            href={`/photos/shows/${slugs.join("/")}/${
+                              child.slug
+                            }`}
+                          >
+                            {child.name}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              </div>
+              <PhotoGallery id={show.data?.id} showName={show.data.name} />
+            </>
+          )}
         </div>
       </main>
     </>

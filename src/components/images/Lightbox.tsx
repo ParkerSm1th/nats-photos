@@ -1,19 +1,33 @@
-import { faArrowLeft, faArrowRight } from "@fortawesome/pro-regular-svg-icons";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faCartMinus,
+  faCartPlus,
+} from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import { useEffect } from "react";
 import { Icons } from "../ui/ui/icons";
+import { useCart } from "@/providers/CartProvider";
+import { Button } from "../ui/ui/button";
+import clsx from "clsx";
 
 function Lightbox({
   selectedImage,
   onClose,
   onNext,
   onPrev,
+  addCallback,
+  removeCallback,
+  photoId,
 }: {
   selectedImage: string;
   onClose: () => void;
   onNext?: () => void;
   onPrev?: () => void;
+  addCallback?: () => void;
+  removeCallback?: () => void;
+  photoId?: string;
 }) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -24,6 +38,8 @@ function Lightbox({
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose, onNext, onPrev]);
+
+  const { cart } = useCart();
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -85,6 +101,42 @@ function Lightbox({
                 />
                 <span className="sr-only">Next</span>
               </button>
+            )}
+            {!!addCallback && !!removeCallback && !!photoId && (
+              <Button
+                type="button"
+                className={clsx(
+                  "absolute bottom-0 right-0 m-4 flex min-w-[200px] gap-4 text-white transition-all",
+                  {
+                    "bg-red-500 hover:bg-red-600": cart.find(
+                      (i) => i.id === photoId
+                    ),
+                    "bg-purple-500 hover:bg-purple-600": !cart.find(
+                      (i) => i.id === photoId
+                    ),
+                  }
+                )}
+                onClick={
+                  cart.find((i) => i.id === photoId)
+                    ? removeCallback
+                    : addCallback
+                }
+              >
+                <FontAwesomeIcon
+                  icon={
+                    cart.find((i) => i.id === photoId)
+                      ? faCartMinus
+                      : faCartPlus
+                  }
+                  className="h-5 w-5"
+                />
+                <span>
+                  {cart.find((i) => i.id === photoId)
+                    ? "Remove from"
+                    : "Add to"}{" "}
+                  cart
+                </span>
+              </Button>
             )}
             <Image
               src={selectedImage}
