@@ -50,7 +50,9 @@ const createInnerTRPCContext = ({ auth }: AuthContext) => {
  * @link https://trpc.io/docs/context
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({ auth: getAuth(opts.req) });
+  return createInnerTRPCContext({
+    auth: getAuth(opts.req) as SignedInAuthObject | SignedOutAuthObject,
+  });
 };
 
 /**
