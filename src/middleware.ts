@@ -10,6 +10,7 @@ const publicPaths = [
   "/signup*",
   "/api/trpc/shows*",
   "/api/stripe/webhook",
+  "/en/api/stripe/webhook",
   "/photos/shows*",
   "/photos/cart",
   "/photos",
