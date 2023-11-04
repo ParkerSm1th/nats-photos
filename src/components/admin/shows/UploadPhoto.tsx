@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/ui/spinner";
 import imageCompression from "browser-image-compression";
 
 type UploadableFile = {
+  id: string;
   name: string;
   type: string;
   size: number;
@@ -38,9 +39,8 @@ export const UploadPhotoDialog = ({
   const upload = async () => {
     setLoading(true);
     for (const newFile of files) {
-      const photoId = uuid();
       const link = await generateLink.mutateAsync({
-        photoKey: `${photoId}.jpg`,
+        photoKey: `${newFile.id}.jpg`,
         type: "image/jpeg",
       });
       try {
@@ -57,14 +57,15 @@ export const UploadPhotoDialog = ({
         const compressedFile = await imageCompression(newFile.file, options);
         await addPhoto.mutateAsync({
           showId: showId,
-          photoId,
+          photoId: newFile.id,
           base64: await compressedFile
             .arrayBuffer()
             .then((buffer) => Buffer.from(buffer).toString("base64")),
         });
-        setFiles(files.filter((f) => f.name !== newFile.name));
+        setFiles(files.filter((f) => f.id !== newFile.id));
       } catch (err) {
         console.error(err);
+        setFiles(files.filter((f) => f.id !== newFile.id));
       }
     }
     setLoading(false);
@@ -111,9 +112,10 @@ export const UploadPhotoDialog = ({
                 accept="image/png, image/jpg"
                 multiple
                 onChange={(e) => {
-                  const files = Array.from(e.target.files ?? []);
+                  const localFiles = Array.from(e.target.files ?? []);
                   setFiles(
-                    files.map((file) => ({
+                    localFiles.map((file) => ({
+                      id: uuid(),
                       name: file.name,
                       type: file.type,
                       size: file.size,
@@ -124,31 +126,33 @@ export const UploadPhotoDialog = ({
               />
             </label>
           </div>
-          {files.map((file) => (
-            // table of files with file name and trash can icon
-            <div
-              className="mt-4 flex items-center justify-between"
-              key={file.name}
-            >
-              <div className="flex items-center">
-                <p className="ml-2">{file.name}</p>
-              </div>
+          <div className="mt-4 max-h-[300px] overflow-y-auto">
+            {files.map((file) => (
+              // table of files with file name and trash can icon
               <div
-                onClick={() => {
-                  setFiles(files.filter((f) => f.name !== file.name));
-                }}
-                className="cursor-pointer"
+                className="mt-4 flex items-center justify-between"
+                key={file.id}
               >
-                {loading ? (
-                  <Spinner className="h-4 w-4" />
-                ) : (
-                  <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
-                )}
+                <div className="flex items-center">
+                  <p className="ml-2">{file.name}</p>
+                </div>
+                <div
+                  onClick={() => {
+                    setFiles(files.filter((f) => f.id !== file.id));
+                  }}
+                  className="cursor-pointer"
+                >
+                  {loading ? (
+                    <Spinner className="h-4 w-4" />
+                  ) : (
+                    <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
           {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-          <Button className="mx-auto mt-4" onClick={upload}>
+          <Button className="mx-auto mt-4" onClick={upload} disabled={loading}>
             Upload
           </Button>
         </div>
