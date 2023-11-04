@@ -31,8 +31,8 @@ export default function Cart() {
                 src={item.link}
                 alt={item.id}
                 className="max-h-[50px] w-auto rounded-lg md:max-h-[150px]"
-                height={200}
-                width={400}
+                height={150}
+                width={225}
               />
               <div className="mx-0 flex flex-col md:mx-4">
                 <p className="text-lg font-semibold">{item.show.name}</p>

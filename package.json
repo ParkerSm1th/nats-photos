@@ -12,7 +12,7 @@
     "stripe": "stripe listen --forward-to localhost:3000/api/stripe/webhook"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.405.0",
+    "@aws-sdk/client-s3": "^3.441.0",
     "@clerk/nextjs": "^4.26.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
@@ -53,17 +53,21 @@
     "@trpc/server": "^10.26.0",
     "@types/react-modal-image": "^2.6.0",
     "@types/react-router-hash-link": "^2.4.6",
+    "@types/uuid": "^9.0.6",
     "aws-sdk": "^2.1450.0",
     "axios": "^1.6.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "framer-motion": "^10.16.2",
+    "fs": "^0.0.1-security",
     "jimp": "^0.22.10",
+    "jpeg-js": "^0.4.4",
     "magic-sdk": "^19.2.0",
     "micro": "^10.0.1",
     "next": "^13.4.2",
     "next-auth": "^4.22.1",
+    "next-s3-upload": "^0.3.4",
     "nodemailer": "^6.9.4",
     "purejswatermark": "^0.0.7",
     "react": "18.2.0",
@@ -81,6 +85,7 @@
     "toastr": "^2.1.4",
     "use-toast": "^0.0.1",
     "useismobile": "^1.0.4",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

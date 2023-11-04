@@ -3,6 +3,7 @@ import {
   faArrowRight,
   faCartMinus,
   faCartPlus,
+  faCartShopping,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -11,6 +12,7 @@ import { Icons } from "../ui/ui/icons";
 import { useCart } from "@/providers/CartProvider";
 import { Button } from "../ui/ui/button";
 import clsx from "clsx";
+import { useRouter } from "next/router";
 
 function Lightbox({
   selectedImage,
@@ -40,6 +42,7 @@ function Lightbox({
   }, [onClose, onNext, onPrev]);
 
   const { cart } = useCart();
+  const router = useRouter();
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -58,7 +61,7 @@ function Lightbox({
           &#8203;
         </span>
         <div
-          className="m-8 inline-block max-w-screen-lg transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:align-middle"
+          className="m-8 inline-block w-full max-w-screen-md transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:align-middle"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-headline"
@@ -108,7 +111,7 @@ function Lightbox({
                 className={clsx(
                   "absolute bottom-0 right-0 m-4 flex min-w-[200px] gap-4 text-white transition-all",
                   {
-                    "bg-red-500 hover:bg-red-600": cart.find(
+                    "bg-lime-600 hover:bg-lime-700": cart.find(
                       (i) => i.id === photoId
                     ),
                     "bg-purple-500 hover:bg-purple-600": !cart.find(
@@ -118,31 +121,28 @@ function Lightbox({
                 )}
                 onClick={
                   cart.find((i) => i.id === photoId)
-                    ? removeCallback
+                    ? () => router.push("/photos/cart")
                     : addCallback
                 }
               >
                 <FontAwesomeIcon
                   icon={
                     cart.find((i) => i.id === photoId)
-                      ? faCartMinus
+                      ? faCartShopping
                       : faCartPlus
                   }
                   className="h-5 w-5"
                 />
                 <span>
-                  {cart.find((i) => i.id === photoId)
-                    ? "Remove from"
-                    : "Add to"}{" "}
-                  cart
+                  {cart.find((i) => i.id === photoId) ? "Go to" : "Add to"} cart
                 </span>
               </Button>
             )}
             <Image
               src={selectedImage}
               alt="selected image"
-              width={800}
-              height={800}
+              width={400}
+              height={400}
               className="h-full w-full"
               layout="responsive"
               placeholder="blur"

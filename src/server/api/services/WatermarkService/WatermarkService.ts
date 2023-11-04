@@ -1,4 +1,4 @@
-import Jimp from "jimp";
+import type Jimp from "jimp";
 
 const attachSmallLogo = (
   image: Jimp,
@@ -20,9 +20,7 @@ export class WatermarkService {
   constructor(logo: Jimp) {
     this.logo = logo;
   }
-  async getWatermarkedImage(url: string): Promise<Jimp> {
-    const image = await Jimp.read(url);
-
+  getWatermarkedImage(image: Jimp): Jimp {
     const X = image.bitmap.width / 2 - this.logo.bitmap.width / 2;
     const Y = image.bitmap.height / 2 - this.logo.bitmap.height / 2;
 

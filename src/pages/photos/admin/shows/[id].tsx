@@ -1,6 +1,8 @@
 import { ShowChildrenTable } from "@/components/admin/shows/ShowChildrenTable";
+import { UploadPhotoDialog } from "@/components/admin/shows/UploadPhoto";
 import { BarGraph } from "@/components/global/BarGraph";
 import { PhotoGallery } from "@/components/shows/PhotoGallery";
+import { Button } from "@/components/ui/ui/button";
 import {
   Card,
   CardContent,
@@ -27,6 +29,7 @@ export default function Show() {
   const router = useRouter();
   const id = router.query.id as string;
   const [currentTab, setCurrentTab] = useState<TABS>("overview");
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
   useEffect(() => {
     if (router.query.tab) {
       setCurrentTab(router.query.tab as TABS);
@@ -92,17 +95,24 @@ export default function Show() {
             });
           }}
         >
-          <TabsList className="mb-4 grid w-fit grid-cols-3">
-            <TabsTrigger value="overview" className="px-8">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="photos" className="px-8">
-              Photos
-            </TabsTrigger>
-            <TabsTrigger value="sub-shows" className="px-8">
-              Sub Shows
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-between">
+            <TabsList className="mb-4 grid w-fit grid-cols-3">
+              <TabsTrigger value="overview" className="px-8">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="px-8">
+                Photos
+              </TabsTrigger>
+              <TabsTrigger value="sub-shows" className="px-8">
+                Sub Shows
+              </TabsTrigger>
+            </TabsList>
+            {currentTab === "photos" && (
+              <Button className="mb-4" onClick={() => setIsUploadOpen(true)}>
+                Upload Photos
+              </Button>
+            )}
+          </div>
           <TabsContent value="overview">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
@@ -271,6 +281,11 @@ export default function Show() {
             <ShowChildrenTable id={id} />
           </TabsContent>
         </Tabs>
+        <UploadPhotoDialog
+          open={isUploadOpen}
+          onClose={() => setIsUploadOpen(false)}
+          showId={id}
+        />
       </main>
     </>
   );

@@ -2,10 +2,14 @@ import Image from "next/image";
 import { useState } from "react";
 import Lightbox from "../images/Lightbox";
 import { useCart } from "@/providers/CartProvider";
+import { api } from "@/utils/api";
+import { Photo } from "@prisma/client";
+import { SpinnerPage } from "../global/Spinner";
+import SmallLogo from "../../public/images/WhiteSmallLogo.png";
+import { Spinner } from "../ui/ui/spinner";
 
-type Image = {
-  id: string;
-  link: string;
+type PhotoResponse = Photo & {
+  url: string;
 };
 
 export const PhotoGallery = ({
@@ -17,67 +21,74 @@ export const PhotoGallery = ({
 }) => {
   const { addToCart, removeFromCart } = useCart();
 
-  const data: Image[] = [
+  const { isLoading, data } = api.shows.getShowPhotos.useQuery(
     {
-      id: "3e8e5253-c63b-4c1d-9daa-d6612ff9f3e7",
-      link: "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/2_axc1ll.jpg",
+      id,
     },
     {
-      id: "2",
-      link: "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816629/4_ewj4xy.jpg",
-    },
-    {
-      id: "3",
-      link: "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/2_axc1ll.jpg",
-    },
-    {
-      id: "4",
-      link: "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/2_axc1ll.jpg",
-    },
-    {
-      id: "5",
-      link: "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/2_axc1ll.jpg",
-    },
-  ];
-
-  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
-  const selectedImageIndex = data.findIndex(
-    (item) => item.id === selectedImage?.id
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    }
   );
+
+  const [selectedImage, setSelectedImage] = useState<PhotoResponse | null>(
+    null
+  );
+  const selectedImageIndex = !data
+    ? -1
+    : data.findIndex((item) => item.id === selectedImage?.id);
   const shouldShowNext =
-    selectedImageIndex !== -1 && selectedImageIndex < data.length - 1;
+    selectedImageIndex !== -1 &&
+    selectedImageIndex < (data ? data.length - 1 : 0);
   const shouldShowPrev = selectedImageIndex !== -1 && selectedImageIndex > 0;
-  return (
+  const [imagesLoaded, setImagesLoaded] = useState<string[]>([]);
+  return isLoading || !data ? (
+    <SpinnerPage />
+  ) : (
     <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {data.map((photo) => (
           <div
             key={photo.id}
-            className="relative cursor-pointer"
+            className="relative min-h-[220px] min-w-[330px] cursor-pointer"
             onClick={() => {
               setSelectedImage(photo);
             }}
           >
             <Image
-              src={photo.link}
+              src={photo.url}
               layout="responsive"
-              width={100}
-              height={100}
+              width={330}
+              height={220}
               objectFit="cover"
               className="rounded-lg"
               alt={photo.id}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRm knyJckliyjqTzSlT54b6bk+h0R//2Q=="
+              loading="lazy"
+              onLoad={() => {
+                setImagesLoaded((prev) => [...prev, photo.id]);
+              }}
             />
+            {!imagesLoaded.includes(photo.id) ? (
+              <div className="absolute left-0 top-0 flex h-[220px] w-[330px] items-center justify-center rounded-lg bg-gray-200 text-gray-600">
+                <Spinner />
+              </div>
+            ) : (
+              <></>
+            )}
           </div>
         ))}
       </div>
       {selectedImage && (
         <Lightbox
-          selectedImage={selectedImage.link}
+          selectedImage={selectedImage.url}
           onClose={() => setSelectedImage(null)}
           addCallback={() =>
             addToCart({
               id: selectedImage.id,
-              link: selectedImage.link,
+              link: selectedImage.url,
               show: { id: id, name: showName },
             })
           }

@@ -2,6 +2,9 @@ import { type Show as PrismaShow, type Show } from "@prisma/client";
 import { z } from "zod";
 import { S3Service } from "../services/S3Service/S3Service";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
+import Jimp from "jimp";
+import { WatermarkService } from "../services/WatermarkService/WatermarkService";
+import JPEG from "jpeg-js";
 
 const s3Service = new S3Service("natalies-photos");
 
@@ -142,14 +145,67 @@ export const showRouter = createTRPCRouter({
       if (!rawShow) return null;
       return rawShow;
     }),
+  getShowPhotos: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const photos = await ctx.prisma.photo.findMany({
+        where: { showId: input.id },
+      });
+      return photos.map((photo) => ({
+        ...photo,
+        // a year lifetime
+        url: s3Service.getPresignedLink(photo.id + "-watermark.jpg", 604800),
+      }));
+    }),
+  getPresignedUploadLink: adminProcedure
+    .input(
+      z.object({
+        photoKey: z.string(),
+        type: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const s3Service = new S3Service("natalies-photos");
+      const preSign = s3Service.getPresignedUploadLink(
+        {
+          key: input.photoKey,
+          type: input.type,
+        },
+        60
+      );
+      return {
+        url: preSign,
+      };
+    }),
   addPhoto: adminProcedure
     .input(
       z.object({
         showId: z.string().uuid(),
         photoId: z.string().uuid(),
+        base64: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      Jimp.decoders["image/jpeg"] = (data) =>
+        JPEG.decode(data, { maxMemoryUsageInMB: 60000 });
+      const image = await Jimp.read(Buffer.from(input.base64, "base64"));
+      const downsizedImage = image.resize(1000, Jimp.AUTO).quality(100);
+      const watermarkService = new WatermarkService(
+        await Jimp.read("public/images/WhiteSmallLogo.png")
+      );
+      const waterMarked = watermarkService.getWatermarkedImage(downsizedImage);
+      const previewUploadUrl = s3Service.getPresignedUploadLink(
+        {
+          key: input.photoId + "-watermark.jpg",
+          type: "image/jpeg",
+        },
+        60
+      );
+      await fetch(previewUploadUrl, {
+        method: "PUT",
+        headers: new Headers({ "Content-Type": "image/jpeg" }),
+        body: await waterMarked.getBufferAsync(Jimp.MIME_JPEG),
+      });
       const photo = await ctx.prisma.photo.upsert({
         where: { id: input.photoId },
         update: {},
@@ -181,5 +237,8 @@ const fromPrisma = (show: ShowWithChildren, children = true): Show => {
 export const config = {
   api: {
     responseLimit: false,
+    bodyParser: {
+      sizeLimit: "20mb", // Set desired value here
+    },
   },
 };

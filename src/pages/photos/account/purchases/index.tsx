@@ -1,9 +1,12 @@
 import { SpinnerPage } from "@/components/global/Spinner";
 import { Button } from "@/components/ui/ui/button";
 import { Card } from "@/components/ui/ui/card";
+import { Spinner } from "@/components/ui/ui/spinner";
+import { useToast } from "@/components/ui/ui/use-toast";
 import { api } from "@/utils/api";
 import Image from "next/image";
-import Link from "next/link";
+import { useState } from "react";
+import clsx from "clsx";
 
 export default function Purchases() {
   const { isLoading, data } = api.user.getPurchases.useQuery(undefined, {
@@ -11,9 +14,27 @@ export default function Purchases() {
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   });
-  return isLoading ? (
-    <SpinnerPage />
-  ) : (
+
+  const getRawPhoto = api.user.getRawPhoto.useMutation();
+  const { toast } = useToast();
+
+  const [downloadsLoading, setDownloadsLoading] = useState<string[]>([]);
+
+  const downloadPhoto = async (photoId: string) => {
+    const url = await getRawPhoto.mutateAsync({ photoId });
+    if (!url) {
+      setDownloadsLoading(downloadsLoading.filter((id) => id !== photoId));
+      return toast({
+        title: "Error",
+        description: "Could not download photo",
+      });
+    }
+    window.open(url, "_blank");
+
+    setDownloadsLoading(downloadsLoading.filter((id) => id !== photoId));
+  };
+
+  return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-8 ">
       <div className="text-center">
         <h1 className="mb-2 text-5xl font-extrabold tracking-tight text-black">
@@ -23,35 +44,60 @@ export default function Purchases() {
           You can download the raw photos (no watermark!) below.
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {data?.map((purchase) => (
-          <Card key={purchase.id} className="bg-slate-50">
-            <Image
-              src={purchase.image}
-              alt={purchase.photoId}
-              layout="responsive"
-              width={100}
-              height={100}
-              objectFit="cover"
-              className="rounded-t-lg"
-            />
-            <div className="flex flex-col items-center justify-between space-y-2 py-2">
-              <div className="text-center">
-                <p className="text-md font-semibold text-black">
-                  {purchase.show?.name} ({purchase.show?.location})
-                </p>
-                <p className="text-md text-slate-900">
-                  {purchase.show?.startDate.toLocaleDateString() ??
-                    purchase.createdAt.toLocaleDateString()}
-                </p>
+      {isLoading ? (
+        <SpinnerPage />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {data?.map((purchase) => (
+            <Card key={purchase.id} className="bg-slate-50">
+              <div className="min-w-[330px]">
+                <Image
+                  src={purchase.image}
+                  alt={purchase.photoId}
+                  layout="responsive"
+                  width={330}
+                  height={220}
+                  objectFit="cover"
+                  className="rounded-t-lg"
+                />
               </div>
-              <Button className="bg-purple-600 transition-all hover:bg-purple-700">
-                Download Raw Photo
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+              <div className="flex flex-col items-center justify-between space-y-2 py-2">
+                <div className="text-center">
+                  <p className="text-md font-semibold text-black">
+                    {purchase.show?.name} ({purchase.show?.location})
+                  </p>
+                  <p className="text-md text-slate-900">
+                    {purchase.show?.startDate.toLocaleDateString() ??
+                      purchase.createdAt.toLocaleDateString()}
+                  </p>
+                </div>
+                <Button
+                  className="relative bg-purple-600 transition-all hover:bg-purple-700"
+                  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                  onClick={async () => {
+                    setDownloadsLoading([
+                      ...downloadsLoading,
+                      purchase.photoId,
+                    ]);
+                    await downloadPhoto(purchase.photoId);
+                  }}
+                >
+                  <span
+                    className={clsx({
+                      "opacity-0": downloadsLoading.includes(purchase.photoId),
+                    })}
+                  >
+                    Download Raw Photo
+                  </span>
+                  {downloadsLoading.includes(purchase.photoId) && (
+                    <Spinner className="absolute top-1" />
+                  )}
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

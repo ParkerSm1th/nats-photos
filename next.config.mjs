@@ -19,7 +19,13 @@ const config = {
     defaultLocale: "en",
   },
   images: {
-    domains: ["res.cloudinary.com", "img.clerk.com", "natalies-photos.s3.wasabisys.com"],
+    domains: ["res.cloudinary.com", "img.clerk.com", "gateway.storjshare.io"],
+  },
+  webpack: (config) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.resolve.fallback = { fs: false };
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return config;
   },
 };
 
