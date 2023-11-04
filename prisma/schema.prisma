@@ -50,6 +50,7 @@ model Purchases {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
+    @@unique([photoId, userId])
     @@index([photoId, userId])
 }
 

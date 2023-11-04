@@ -30,10 +30,10 @@ const NAV_LINKS = [
     href: "/#portfolio",
     label: "Portfolio",
   },
-  // {
-  //   href: "/photos",
-  //   label: "Get Your Photos",
-  // },
+  {
+    href: "/photos",
+    label: "Get Your Photos",
+  },
   {
     href: "/#contact",
     label: "Contact",
@@ -177,12 +177,6 @@ function Home() {
 
   const itemsToShow = expanded ? portfolioItems : portfolioItems.slice(0, 6);
 
-  const { data, isLoading } = api.user.testPhoto.useQuery(undefined, {
-    refetchInterval: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  });
-
   return (
     <>
       <Head>
@@ -217,9 +211,6 @@ function Home() {
             <p className="pt-4 text-center font-bold">
               Currently based in Fort Collins, CO
             </p>
-          </div>
-          <div>
-            {!isLoading && data?.url && <img src={data.url} alt="image" />}
           </div>
           <div
             className="flex w-full flex-col items-center justify-center gap-4 pt-12"
