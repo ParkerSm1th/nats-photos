@@ -17,7 +17,7 @@ export class S3Service {
   }
   getPresignedLink(key: string, expiryInSeconds: number): string {
     const link = s3.getSignedUrl("getObject", {
-      Bucket: "photos",
+      Bucket: process.env.NODE_ENV === "development" ? "photos-dev" : "photos",
       Key: key,
       Expires: expiryInSeconds,
     });
@@ -33,14 +33,31 @@ export class S3Service {
     expiryInSeconds: number
   ): string {
     const link = s3.getSignedUrl("putObject", {
-      Bucket: "photos",
+      Bucket: process.env.NODE_ENV === "development" ? "photos-dev" : "photos",
       Key: info.key,
       Expires: expiryInSeconds,
       ContentType: info.type,
     });
-    console.log("S3Service", link);
     // Weird vercel bug, it appends this odd trace
     const splitLink = link.split("&X-Amzn-Trace-Id");
     return link;
+  }
+  async deleteObject(key: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      s3.deleteObject(
+        {
+          Bucket:
+            process.env.NODE_ENV === "development" ? "photos-dev" : "photos",
+          Key: key,
+        },
+        (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        }
+      );
+    });
   }
 }

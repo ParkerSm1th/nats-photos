@@ -10,6 +10,7 @@ import { Session } from "next-auth";
 import type { AppType } from "next/app";
 import Head from "next/head";
 import { CartProvider } from "@/providers/CartProvider";
+import { UploadsProvider } from "@/providers/UploadsProvider";
 
 export type NextPageWithLayout = NextPage & {
   getLayout?: (page: React.ReactElement) => React.ReactElement;
@@ -58,7 +59,9 @@ const MainApp: AppType<{ session: Session | null }> = ({
         ></link>
       </Head>
       <ClerkProvider>
-        <CartProvider>{getLayout(<Component {...pageProps} />)}</CartProvider>
+        <UploadsProvider>
+          <CartProvider>{getLayout(<Component {...pageProps} />)}</CartProvider>
+        </UploadsProvider>
       </ClerkProvider>
       <Toaster />
     </>

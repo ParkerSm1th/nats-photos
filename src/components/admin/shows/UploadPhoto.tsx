@@ -12,6 +12,8 @@ import { useState } from "react";
 import { v4 as uuid } from "uuid";
 import { Spinner } from "@/components/ui/ui/spinner";
 import imageCompression from "browser-image-compression";
+import { useUploadQueue } from "@/providers/UploadsProvider";
+import clsx from "clsx";
 
 type UploadableFile = {
   id: string;
@@ -32,44 +34,8 @@ export const UploadPhotoDialog = ({
   showId: string;
 }) => {
   const [files, setFiles] = useState<UploadableFile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const generateLink = api.shows.getPresignedUploadLink.useMutation();
-  const addPhoto = api.shows.addPhoto.useMutation();
-
-  const upload = async () => {
-    setLoading(true);
-    for (const newFile of files) {
-      const link = await generateLink.mutateAsync({
-        photoKey: `${newFile.id}.jpg`,
-        type: "image/jpeg",
-      });
-      try {
-        await fetch(link.url, {
-          method: "PUT",
-          headers: new Headers({ "Content-Type": "image/jpeg" }),
-          body: newFile.file,
-        });
-        const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1000,
-          useWebWorker: true,
-        };
-        const compressedFile = await imageCompression(newFile.file, options);
-        await addPhoto.mutateAsync({
-          showId: showId,
-          photoId: newFile.id,
-          base64: await compressedFile
-            .arrayBuffer()
-            .then((buffer) => Buffer.from(buffer).toString("base64")),
-        });
-        setFiles(files.filter((f) => f.id !== newFile.id));
-      } catch (err) {
-        console.error(err);
-        setFiles(files.filter((f) => f.id !== newFile.id));
-      }
-    }
-    setLoading(false);
-  };
+  const { queue, addToQueue, removeFromQueue, triggerUpload, loading } =
+    useUploadQueue();
 
   return (
     <Dialog
@@ -90,7 +56,12 @@ export const UploadPhotoDialog = ({
           <div className="mt-4 flex w-full items-center justify-center">
             <label
               htmlFor="dropzone-file"
-              className="dark:hover:bg-bray-800 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+              className={clsx(
+                "dark:hover:bg-bray-800 flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600",
+                {
+                  "pointer-events-none opacity-50": loading,
+                }
+              )}
             >
               <div className="flex flex-col items-center justify-center pb-6 pt-5">
                 <FontAwesomeIcon
@@ -111,48 +82,62 @@ export const UploadPhotoDialog = ({
                 className="hidden"
                 accept="image/png, image/jpg"
                 multiple
+                disabled={loading}
                 onChange={(e) => {
                   const localFiles = Array.from(e.target.files ?? []);
-                  setFiles(
-                    localFiles.map((file) => ({
-                      id: uuid(),
-                      name: file.name,
-                      type: file.type,
-                      size: file.size,
-                      file: file,
-                    }))
-                  );
+                  const newFiles = localFiles.map((file) => ({
+                    id: uuid(),
+                    showId: showId,
+                    file,
+                  }));
+                  addToQueue(newFiles);
+                  e.target.value = "";
                 }}
               />
             </label>
           </div>
-          <div className="mt-4 max-h-[300px] overflow-y-auto">
-            {files.map((file) => (
-              // table of files with file name and trash can icon
-              <div
-                className="mt-4 flex items-center justify-between"
-                key={file.id}
-              >
-                <div className="flex items-center">
-                  <p className="ml-2">{file.name}</p>
-                </div>
-                <div
-                  onClick={() => {
-                    setFiles(files.filter((f) => f.id !== file.id));
-                  }}
-                  className="cursor-pointer"
-                >
-                  {loading ? (
-                    <Spinner className="h-4 w-4" />
-                  ) : (
-                    <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
-                  )}
-                </div>
+          <div className="mt-4 h-[250px] overflow-y-auto">
+            {queue.filter((i) => i.showId == showId).length == 0 && (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No photos in queue.
+                </p>
               </div>
-            ))}
+            )}
+            {queue
+              .filter((i) => i.showId == showId)
+              .map((file) => (
+                // table of files with file name and trash can icon
+                <div
+                  className="mt-4 flex items-center justify-between"
+                  key={file.id}
+                >
+                  <div className="flex items-center">
+                    <p className="ml-2 select-none">{file.file.name}</p>
+                  </div>
+                  <div
+                    onClick={() => {
+                      removeFromQueue(file.id);
+                    }}
+                    className="cursor-pointer pr-3"
+                  >
+                    {loading ? (
+                      <Spinner className="h-4 w-4" />
+                    ) : (
+                      <FontAwesomeIcon icon={faTrash} className="h-4 w-4" />
+                    )}
+                  </div>
+                </div>
+              ))}
           </div>
           {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-          <Button className="mx-auto mt-4" onClick={upload} disabled={loading}>
+          <Button
+            className="mx-auto mt-4"
+            onClick={() => {
+              void triggerUpload();
+            }}
+            disabled={loading}
+          >
             Upload
           </Button>
         </div>

@@ -22,3 +22,9 @@ export type SessionUser = {
   role?: string;
   image?: string | null;
 };
+
+export type UploadQueueItem = {
+  id: string;
+  showId: string;
+  file: File;
+};

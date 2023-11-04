@@ -15,9 +15,11 @@ type PhotoResponse = Photo & {
 export const PhotoGallery = ({
   id,
   showName,
+  adminView,
 }: {
   id: string;
   showName: string;
+  adminView?: boolean;
 }) => {
   const { addToCart, removeFromCart } = useCart();
 
@@ -31,6 +33,24 @@ export const PhotoGallery = ({
       refetchOnWindowFocus: false,
     }
   );
+
+  const utils = api.useContext();
+
+  const deletePhotoMutation = api.shows.deletePhoto.useMutation();
+
+  const deletePhoto = async (photoId: string): Promise<void> => {
+    await deletePhotoMutation.mutateAsync({
+      photoId: photoId,
+    });
+    // Optimistically remove from UI
+    const newData = data?.filter((item) => item.id !== photoId) ?? [];
+    utils.shows.getShowPhotos.setData(
+      {
+        id,
+      },
+      newData
+    );
+  };
 
   const [selectedImage, setSelectedImage] = useState<PhotoResponse | null>(
     null
@@ -92,7 +112,14 @@ export const PhotoGallery = ({
               show: { id: id, name: showName },
             })
           }
-          removeCallback={() => removeFromCart(selectedImage.id)}
+          deleteCallback={
+            adminView
+              ? async (photoId: string) => {
+                  await deletePhoto(photoId);
+                  setSelectedImage(null);
+                }
+              : undefined
+          }
           photoId={selectedImage.id}
           onNext={
             shouldShowNext

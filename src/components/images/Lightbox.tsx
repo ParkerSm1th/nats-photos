@@ -4,15 +4,17 @@ import {
   faCartMinus,
   faCartPlus,
   faCartShopping,
+  faTrash,
 } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Icons } from "../ui/ui/icons";
 import { useCart } from "@/providers/CartProvider";
 import { Button } from "../ui/ui/button";
 import clsx from "clsx";
 import { useRouter } from "next/router";
+import { Spinner } from "../ui/ui/spinner";
 
 function Lightbox({
   selectedImage,
@@ -20,7 +22,7 @@ function Lightbox({
   onNext,
   onPrev,
   addCallback,
-  removeCallback,
+  deleteCallback,
   photoId,
 }: {
   selectedImage: string;
@@ -28,7 +30,7 @@ function Lightbox({
   onNext?: () => void;
   onPrev?: () => void;
   addCallback?: () => void;
-  removeCallback?: () => void;
+  deleteCallback?: (photoId: string) => Promise<void>;
   photoId?: string;
 }) {
   useEffect(() => {
@@ -43,6 +45,7 @@ function Lightbox({
 
   const { cart } = useCart();
   const router = useRouter();
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -105,7 +108,30 @@ function Lightbox({
                 <span className="sr-only">Next</span>
               </button>
             )}
-            {!!addCallback && !!removeCallback && !!photoId && (
+            {!!deleteCallback && (
+              <Button
+                type="button"
+                className={clsx(
+                  "absolute bottom-0 right-0 m-4 flex min-w-[180px] gap-4 bg-red-500 text-white transition-all hover:bg-red-600"
+                )}
+                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                onClick={async () => {
+                  setDeleteLoading(true);
+                  await deleteCallback(photoId!);
+                  setDeleteLoading(false);
+                }}
+              >
+                {deleteLoading ? (
+                  <Spinner className="h-5 w-5" />
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faTrash} className="h-5 w-5" />
+                    <span>Delete Photo</span>
+                  </>
+                )}
+              </Button>
+            )}
+            {!!addCallback && !deleteCallback && !!photoId && (
               <Button
                 type="button"
                 className={clsx(

@@ -214,6 +214,16 @@ export const showRouter = createTRPCRouter({
       });
       return photo;
     }),
+  deletePhoto: adminProcedure
+    .input(z.object({ photoId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const photo = await ctx.prisma.photo.delete({
+        where: { id: input.photoId },
+      });
+      await s3Service.deleteObject(photo.id + "-watermark.jpg");
+      await s3Service.deleteObject(photo.id + ".jpg");
+      return photo;
+    }),
 });
 
 type ShowWithChildren = Partial<PrismaShow> & { children?: Show[] };

@@ -275,7 +275,7 @@ export default function Show() {
             </div>
           </TabsContent>
           <TabsContent value="photos">
-            <PhotoGallery id={id} showName={showName.data?.name} />
+            <PhotoGallery id={id} showName={showName.data?.name} adminView />
           </TabsContent>
           <TabsContent value="sub-shows">
             <ShowChildrenTable id={id} />
