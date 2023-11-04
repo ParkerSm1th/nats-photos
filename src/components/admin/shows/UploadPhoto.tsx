@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
 import { Spinner } from "@/components/ui/ui/spinner";
-import Jimp from "jimp";
+import imageCompression from "browser-image-compression";
 
 type UploadableFile = {
   name: string;
@@ -49,10 +49,16 @@ export const UploadPhotoDialog = ({
           headers: new Headers({ "Content-Type": "image/jpeg" }),
           body: newFile.file,
         });
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1000,
+          useWebWorker: true,
+        };
+        const compressedFile = await imageCompression(newFile.file, options);
         await addPhoto.mutateAsync({
           showId: showId,
           photoId,
-          base64: await newFile.file
+          base64: await compressedFile
             .arrayBuffer()
             .then((buffer) => Buffer.from(buffer).toString("base64")),
         });

@@ -189,11 +189,10 @@ export const showRouter = createTRPCRouter({
       Jimp.decoders["image/jpeg"] = (data) =>
         JPEG.decode(data, { maxMemoryUsageInMB: 60000 });
       const image = await Jimp.read(Buffer.from(input.base64, "base64"));
-      const downsizedImage = image.resize(1000, Jimp.AUTO).quality(100);
       const watermarkService = new WatermarkService(
         await Jimp.read("public/images/WhiteSmallLogo.png")
       );
-      const waterMarked = watermarkService.getWatermarkedImage(downsizedImage);
+      const waterMarked = watermarkService.getWatermarkedImage(image);
       const previewUploadUrl = s3Service.getPresignedUploadLink(
         {
           key: input.photoId + "-watermark.jpg",
