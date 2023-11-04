@@ -190,7 +190,9 @@ export const showRouter = createTRPCRouter({
         JPEG.decode(data, { maxMemoryUsageInMB: 60000 });
       const image = await Jimp.read(Buffer.from(input.base64, "base64"));
       const watermarkService = new WatermarkService(
-        await Jimp.read("public/images/WhiteSmallLogo.png")
+        await Jimp.read(
+          "https://res.cloudinary.com/dqdjvho5d/image/upload/v1699069051/WhiteSmallLogo_kppgao.png"
+        )
       );
       const waterMarked = watermarkService.getWatermarkedImage(image);
       const previewUploadUrl = s3Service.getPresignedUploadLink(
