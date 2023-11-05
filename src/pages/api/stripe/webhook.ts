@@ -50,17 +50,14 @@ export default async function handler(
         };
         const { userId, photos } = completedEvent.metadata;
         if (!photos) return res.send(200);
-        const photosParsed = JSON.parse(photos) as {
-          id: string;
-          showName: string;
-        }[];
+        const photosParsed = JSON.parse(photos) as string[];
         console.log("💰 Payment received!", completedEvent);
         for (const photo of photosParsed) {
           try {
             await prisma.purchases.create({
               data: {
                 userId,
-                photoId: photo.id,
+                photoId: photo,
                 stripeCheckoutId: completedEvent.id,
               },
             });

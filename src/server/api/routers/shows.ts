@@ -155,13 +155,11 @@ export const showRouter = createTRPCRouter({
         where: { showId: input.id },
       });
       // const client = new Redis("redis://default:********@us1-happy-crayfish-38252.upstash.io:38252");
-      // const cachedUrls = await client.get<{
-      //   id: string;
-      //   url: string;
-      // }[]>(`${input.id}-photos`);
+      // const cachedUrls = await client.get(`photos-${input.id}`);
+      // const urlsToAdd = [];
       const returnedPhotos = await Promise.all(
         photos.map((photo) => {
-          // const cachedUrl = cachedUrls.find((c) => c.id === photo.id);
+          // const cachedUrl = cachedUrls?.find((c) => c.id === photo.id);
           // let url = cachedUrl;
           let url = "";
           if (true) {

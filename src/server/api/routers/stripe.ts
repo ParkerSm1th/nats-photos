@@ -12,7 +12,7 @@ export const stripeRouter = createTRPCRouter({
         items: z.array(
           z.object({
             id: z.string(),
-            image: z.string().max(2000),
+            image: z.string(),
             showName: z.string(),
           })
         ),
@@ -38,7 +38,7 @@ export const stripeRouter = createTRPCRouter({
         cancel_url: `${origin}/photos/cart`,
         metadata: {
           userId: ctx.auth.userId,
-          photos: JSON.stringify(input.items),
+          photos: JSON.stringify(input.items.map((x) => x.id)),
         },
       });
       return { sessionId: session.id };
