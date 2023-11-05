@@ -3,6 +3,7 @@ import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { HOSTNAME, isAdmin as isUserAdmin } from "./lib/utils";
+import { trackEvent } from "./utils/tracking";
 
 const publicPaths = [
   "/",
@@ -31,11 +32,12 @@ const isAdmin = (path: string) => {
 };
 
 export default withClerkMiddleware(async (request: NextRequest) => {
+  const { userId } = getAuth(request);
+
   if (isPublic(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
   // if the user is not signed in redirect them to the sign in page.
-  const { userId } = getAuth(request);
 
   if (!userId) {
     // redirect the users to /pages/sign-in/[[...index]].ts

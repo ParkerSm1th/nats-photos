@@ -2,10 +2,13 @@ import CheckoutButton from "@/components/global/CheckoutButton";
 import { Button } from "@/components/ui/ui/button";
 import { Separator } from "@/components/ui/ui/separator";
 import { useCart } from "@/providers/CartProvider";
+import { trackEvent } from "@/utils/tracking";
+import { useAuth } from "@clerk/nextjs";
 import Image from "next/image";
 
 export default function Cart() {
   const { cart, removeFromCart } = useCart();
+  const { userId } = useAuth();
   return (
     <div className="container flex-1 space-y-4 p-8 pt-2">
       <div className="flex w-full items-center justify-between">
@@ -43,7 +46,18 @@ export default function Cart() {
               <p className="text-center text-lg font-semibold">$5</p>
               <button
                 className="text-md text-red-500"
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => {
+                  removeFromCart(item.id);
+                  trackEvent(
+                    {
+                      type: "photos.remove-from-cart",
+                      photoId: item.id,
+                      showId: item.show.id,
+                      showName: item.show.name,
+                    },
+                    userId
+                  );
+                }}
               >
                 Remove
               </button>
