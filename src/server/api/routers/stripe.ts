@@ -12,7 +12,7 @@ export const stripeRouter = createTRPCRouter({
         items: z.array(
           z.object({
             id: z.string(),
-            image: z.string(),
+            image: z.string().max(2000),
             showName: z.string(),
           })
         ),
