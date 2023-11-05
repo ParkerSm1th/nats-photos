@@ -55,6 +55,7 @@
     "@types/react-modal-image": "^2.6.0",
     "@types/react-router-hash-link": "^2.4.6",
     "@types/uuid": "^9.0.6",
+    "@vercel/kv": "^0.2.4",
     "aws-sdk": "^2.1450.0",
     "axios": "^1.6.0",
     "browser-image-compression": "^2.0.2",

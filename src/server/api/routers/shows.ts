@@ -5,6 +5,7 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import Jimp from "jimp";
 import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 import JPEG from "jpeg-js";
+import { kv } from "@vercel/kv";
 
 const s3Service = new S3Service("natalies-photos");
 
@@ -151,11 +152,26 @@ export const showRouter = createTRPCRouter({
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
       });
-      return photos.map((photo) => ({
-        ...photo,
-        // a year lifetime
-        url: s3Service.getPresignedLink(photo.id + "-watermark.jpg", 604800),
-      }));
+      const returnedPhotos = await Promise.all(
+        photos.map(async (photo) => {
+          const cachedUrl = await kv.get<string>(photo.id);
+          let url = cachedUrl;
+          if (!url) {
+            url = s3Service.getPresignedLink(
+              photo.id + "-watermark.jpg",
+              604800
+            );
+            await kv.set(photo.id, url, {
+              ex: 604800,
+            });
+          }
+          return {
+            ...photo,
+            url,
+          };
+        })
+      );
+      return returnedPhotos;
     }),
   getPresignedUploadLink: adminProcedure
     .input(
