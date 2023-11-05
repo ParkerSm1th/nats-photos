@@ -155,17 +155,18 @@ export const showRouter = createTRPCRouter({
         where: { showId: input.id },
       });
       const returnedPhotos = await Promise.all(
-        photos.map(async (photo) => {
-          const cachedUrl = await kv.get<string>(photo.id);
-          let url = cachedUrl;
-          if (!url) {
+        photos.map((photo) => {
+          // const cachedUrl = await kv.get<string>(photo.id);
+          // let url = cachedUrl;
+          let url = "";
+          if (true) {
             url = s3Service.getPresignedLink(
               photo.id + "-watermark.jpg",
               604800
             );
-            await kv.set(photo.id, url, {
-              ex: 604800,
-            });
+            // await kv.set(photo.id, url, {
+            //   ex: 604800,
+            // });
           }
           return {
             ...photo,
