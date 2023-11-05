@@ -20,6 +20,7 @@ const config = {
   },
   images: {
     domains: ["res.cloudinary.com", "img.clerk.com", "gateway.storjshare.io"],
+    unoptimized: true,
   },
   webpack: (config) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

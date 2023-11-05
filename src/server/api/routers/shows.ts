@@ -5,7 +5,7 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import Jimp from "jimp";
 import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 import JPEG from "jpeg-js";
-import { kv } from "@vercel/kv";
+import Redis from "ioredis";
 import { clerkClient } from "@clerk/nextjs";
 import { type User } from "@clerk/nextjs/dist/types/server";
 
@@ -154,9 +154,14 @@ export const showRouter = createTRPCRouter({
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
       });
+      // const client = new Redis("redis://default:********@us1-happy-crayfish-38252.upstash.io:38252");
+      // const cachedUrls = await client.get<{
+      //   id: string;
+      //   url: string;
+      // }[]>(`${input.id}-photos`);
       const returnedPhotos = await Promise.all(
         photos.map((photo) => {
-          // const cachedUrl = await kv.get<string>(photo.id);
+          // const cachedUrl = cachedUrls.find((c) => c.id === photo.id);
           // let url = cachedUrl;
           let url = "";
           if (true) {
