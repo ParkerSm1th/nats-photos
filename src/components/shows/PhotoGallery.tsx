@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Lightbox from "../images/Lightbox";
 import { useCart } from "@/providers/CartProvider";
 import { api } from "@/utils/api";
@@ -7,6 +7,8 @@ import { Photo } from "@prisma/client";
 import { SpinnerPage } from "../global/Spinner";
 import SmallLogo from "../../public/images/WhiteSmallLogo.png";
 import { Spinner } from "../ui/ui/spinner";
+import { useAuth } from "@clerk/nextjs";
+import { trackEvent } from "@/utils/tracking";
 
 type PhotoResponse = Photo & {
   url: string;
@@ -21,8 +23,8 @@ export const PhotoGallery = ({
   showName: string;
   adminView?: boolean;
 }) => {
-  const { addToCart, removeFromCart } = useCart();
-
+  const { addToCart } = useCart();
+  const { userId } = useAuth();
   const { isLoading, data } = api.shows.getShowPhotos.useQuery(
     {
       id,
@@ -55,6 +57,20 @@ export const PhotoGallery = ({
   const [selectedImage, setSelectedImage] = useState<PhotoResponse | null>(
     null
   );
+
+  useEffect(() => {
+    if (!selectedImage) return;
+    trackEvent(
+      {
+        type: "photos.view",
+        photoId: selectedImage.id,
+        showId: id,
+        showName: showName,
+      },
+      userId
+    );
+  }, [id, selectedImage, showName, userId]);
+
   const selectedImageIndex = !data
     ? -1
     : data.findIndex((item) => item.id === selectedImage?.id);
@@ -105,13 +121,22 @@ export const PhotoGallery = ({
         <Lightbox
           selectedImage={selectedImage.url}
           onClose={() => setSelectedImage(null)}
-          addCallback={() =>
+          addCallback={() => {
             addToCart({
               id: selectedImage.id,
               link: selectedImage.url,
               show: { id: id, name: showName },
-            })
-          }
+            });
+            trackEvent(
+              {
+                type: "photos.add-to-cart",
+                photoId: selectedImage.id,
+                showId: id,
+                showName: showName,
+              },
+              userId
+            );
+          }}
           deleteCallback={
             adminView
               ? async (photoId: string) => {

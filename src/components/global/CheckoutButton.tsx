@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/ui/spinner";
+import { trackEvent } from "@/utils/tracking";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -29,6 +30,19 @@ const CheckoutButton = () => {
       await router.push(`/sign-in?redirect_url=${HOSTNAME()}/photos/cart`);
       return;
     }
+    trackEvent(
+      {
+        type: "photos.checkout.click",
+        cart: cart
+          .map((item) => ({
+            photoId: item.id,
+            showId: item.show.id,
+            showName: item.show.name,
+          }))
+          .toString(),
+      },
+      userId
+    );
     setLoading(true);
     try {
       const stripe = await stripePromise;

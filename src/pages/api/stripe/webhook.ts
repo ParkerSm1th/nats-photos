@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { prisma } from "@/server/db";
+import { trackEvent } from "@/utils/tracking";
 import { buffer } from "micro";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import Stripe from "stripe";
@@ -53,13 +54,26 @@ export default async function handler(
           id: string;
           showName: string;
         }[];
+        trackEvent(
+          {
+            type: "photos.checkout.complete",
+            metadata: photos,
+          },
+          userId
+        );
         console.log("💰 Payment received!", completedEvent);
-        await prisma.purchases.createMany({
-          data: photosParsed.map((photo) => ({
-            userId,
-            photoId: photo.id,
-          })),
-        });
+        for (const photo of photosParsed) {
+          try {
+            await prisma.purchases.create({
+              data: {
+                userId,
+                photoId: photo.id,
+              },
+            });
+          } catch (e) {
+            console.log("Error creating purchase", e);
+          }
+        }
         break;
       default:
         console.log(`Unhandled event type ${event.type}`);
