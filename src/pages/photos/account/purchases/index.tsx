@@ -7,6 +7,8 @@ import { api } from "@/utils/api";
 import Image from "next/image";
 import { useState } from "react";
 import clsx from "clsx";
+import { useIsMobile } from "@/utils/hooks/useIsMobile";
+import { DownloadPhotoDialog } from "@/components/shows/DownloadPhotoDialog";
 
 export default function Purchases() {
   const { isLoading, data } = api.user.getPurchases.useQuery(undefined, {
@@ -17,8 +19,11 @@ export default function Purchases() {
 
   const getRawPhoto = api.user.getRawPhoto.useMutation();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [downloadsLoading, setDownloadsLoading] = useState<string[]>([]);
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   const downloadPhoto = async (photoId: string) => {
     const url = await getRawPhoto.mutateAsync({ photoId });
@@ -29,7 +34,13 @@ export default function Purchases() {
         description: "Could not download photo",
       });
     }
-    window.open(url, "_blank");
+    // check user agent
+    if (isMobile) {
+      setIsDownloadOpen(true);
+      setDownloadUrl(url);
+    } else {
+      window.open(url, "_blank");
+    }
 
     setDownloadsLoading(downloadsLoading.filter((id) => id !== photoId));
   };
@@ -98,6 +109,14 @@ export default function Purchases() {
           ))}
         </div>
       )}
+      <DownloadPhotoDialog
+        open={isDownloadOpen}
+        onClose={() => {
+          setIsDownloadOpen(false);
+          setDownloadUrl(null);
+        }}
+        imageUrl={downloadUrl}
+      />
     </div>
   );
 }

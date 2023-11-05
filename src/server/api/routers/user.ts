@@ -24,6 +24,7 @@ export const userRouter = createTRPCRouter({
       where: {
         userId: ctx.auth.userId,
       },
+      orderBy: { createdAt: "desc" },
     });
     const photos = await ctx.prisma.photo.findMany({
       where: {

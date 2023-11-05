@@ -63,7 +63,7 @@ export function NavBar() {
         <div>
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link href="/" legacyBehavior passHref>
+              <Link href="/photos" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   <Image src={SmallLogo} alt="Logo" height={30} width={30} />
                 </NavigationMenuLink>
@@ -115,7 +115,7 @@ export function NavBar() {
                 </ul>
                 <div className="m-auto mb-2 text-center">
                   <Link
-                    href="/photos/shows"
+                    href="/photos/"
                     legacyBehavior
                     passHref
                     className="m-auto"
