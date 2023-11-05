@@ -129,7 +129,7 @@ export function NavBar() {
                 </div>
               </NavigationMenuContent>
             </NavigationMenuItem>
-            <NavigationMenuItem>
+            {/* <NavigationMenuItem>
               <Link
                 href={"/photos/people"}
                 legacyBehavior
@@ -140,7 +140,7 @@ export function NavBar() {
                   People
                 </NavigationMenuLink>
               </Link>
-            </NavigationMenuItem>
+            </NavigationMenuItem> */}
           </NavigationMenuList>
         </div>
         <div>
