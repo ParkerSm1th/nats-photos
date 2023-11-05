@@ -54,13 +54,6 @@ export default async function handler(
           id: string;
           showName: string;
         }[];
-        trackEvent(
-          {
-            type: "photos.checkout.complete",
-            metadata: photos,
-          },
-          userId
-        );
         console.log("💰 Payment received!", completedEvent);
         for (const photo of photosParsed) {
           try {
