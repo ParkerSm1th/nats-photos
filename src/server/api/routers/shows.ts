@@ -6,6 +6,8 @@ import Jimp from "jimp";
 import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 import JPEG from "jpeg-js";
 import { kv } from "@vercel/kv";
+import { clerkClient } from "@clerk/nextjs";
+import { type User } from "@clerk/nextjs/dist/types/server";
 
 const s3Service = new S3Service("natalies-photos");
 
@@ -192,6 +194,87 @@ export const showRouter = createTRPCRouter({
       return {
         url: preSign,
       };
+    }),
+  getDashboardStats: adminProcedure
+    .input(
+      z.object({
+        showId: z.string().uuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const purchases = await ctx.prisma.purchases.findMany({
+        where: {
+          photo: {
+            showId: input.showId,
+          },
+        },
+      });
+      return {
+        purchases: purchases.length,
+        sales: purchases.length * 5,
+      };
+    }),
+  getRecentSales: adminProcedure
+    .input(
+      z.object({
+        showId: z.string().uuid(),
+        limit: z.number().optional(),
+        sinceSeconds: z.number().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const purchases = await ctx.prisma.purchases.findMany({
+        where: {
+          photo: {
+            showId: input.showId,
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: input.limit ? input.limit : 10,
+      });
+      // use await clerkClient.users.getUser(purchase.userId) to get all of the users
+      // from all of the purchases
+      const users = await Promise.all(
+        purchases.map((p) => clerkClient.users.getUser(p.userId))
+      );
+      // reduce purchases down based on their createdAt date
+      // and the userId
+      const reducedPurchases = purchases.reduce(
+        (
+          acc: {
+            id: string;
+            userId: string;
+            user?: User;
+            stripeCheckoutId: string;
+            createdAt: Date;
+            photosPurchased: number;
+          }[],
+          purchase
+        ) => {
+          const existingPurchase = acc.find(
+            (p) =>
+              (p.createdAt.toISOString() === purchase.createdAt.toISOString() &&
+                p.userId === purchase.userId) ||
+              p.stripeCheckoutId === purchase.stripeCheckoutId
+          );
+          if (existingPurchase) {
+            existingPurchase.photosPurchased += 1;
+          } else {
+            acc.push({
+              ...purchase,
+              user: users.find((u) => u.id === purchase.userId),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              stripeCheckoutId: purchase.stripeCheckoutId ?? "",
+              photosPurchased: 1,
+            });
+          }
+          return acc;
+        },
+        []
+      );
+      return reducedPurchases;
     }),
   addPhoto: adminProcedure
     .input(

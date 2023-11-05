@@ -61,6 +61,7 @@ export default async function handler(
               data: {
                 userId,
                 photoId: photo.id,
+                stripeCheckoutId: completedEvent.id,
               },
             });
           } catch (e) {

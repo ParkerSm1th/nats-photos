@@ -43,12 +43,13 @@ model Photo {
 }
 
 model Purchases {
-    id        String   @id @default(uuid())
-    photoId   String
-    photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
-    userId    String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    id               String   @id @default(uuid())
+    photoId          String
+    photo            Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+    userId           String
+    stripeCheckoutId String?  @default(uuid())
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @default(now()) @updatedAt
 
     @@unique([photoId, userId])
     @@index([photoId, userId])
