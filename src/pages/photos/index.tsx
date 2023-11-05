@@ -24,6 +24,7 @@ export default function PhotosHome() {
         </h1>
         <p className="text-lg text-muted-foreground">
           Below are all of the shows, along with any sub-sections of each show.
+          Click on the show you'd like to view photos from.
         </p>
       </div>
       {shows.isLoading ? (
