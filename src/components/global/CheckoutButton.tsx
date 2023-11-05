@@ -52,6 +52,7 @@ const CheckoutButton = () => {
       const data = await getCheckout.mutateAsync({
         items: cart.map((item) => ({
           id: item.id,
+          image: item.link,
           showName: item.show.name,
         })),
       });

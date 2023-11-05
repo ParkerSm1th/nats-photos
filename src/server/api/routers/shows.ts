@@ -202,10 +202,18 @@ export const showRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      const children = await ctx.prisma.show.findMany({
+        where: {
+          parentId: input.showId,
+        },
+      });
+      const childIds = children.map((c) => c.id);
       const purchases = await ctx.prisma.purchases.findMany({
         where: {
           photo: {
-            showId: input.showId,
+            showId: {
+              in: [...childIds, input.showId],
+            },
           },
         },
       });
@@ -223,10 +231,18 @@ export const showRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      const children = await ctx.prisma.show.findMany({
+        where: {
+          parentId: input.showId,
+        },
+      });
+      const childIds = children.map((c) => c.id);
       const purchases = await ctx.prisma.purchases.findMany({
         where: {
           photo: {
-            showId: input.showId,
+            showId: {
+              in: [...childIds, input.showId],
+            },
           },
         },
         orderBy: {

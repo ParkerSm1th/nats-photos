@@ -12,6 +12,7 @@ export const stripeRouter = createTRPCRouter({
         items: z.array(
           z.object({
             id: z.string(),
+            image: z.string(),
             showName: z.string(),
           })
         ),
@@ -25,6 +26,7 @@ export const stripeRouter = createTRPCRouter({
             currency: "usd",
             product_data: {
               name: `Photo from ${item.showName}`,
+              images: [item.image],
             },
             unit_amount: PRICE_PER_PHOTO * 100,
           },

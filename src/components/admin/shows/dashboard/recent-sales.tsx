@@ -7,6 +7,7 @@ import {
 import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/ui/avatar";
+import clsx from "clsx";
 
 export default function RecentSales({ showId }: { showId: string }) {
   const { data: purchases, isLoading: isPurchasesLoading } =
@@ -48,8 +49,13 @@ export default function RecentSales({ showId }: { showId: string }) {
               </p>
             </div>
           ) : (
-            purchases.map((purchase) => (
-              <div className="flex items-center" key={purchase.id}>
+            purchases.map((purchase, index) => (
+              <div
+                className={clsx("flex items-center", {
+                  "pb-5": index === purchases.length - 1,
+                })}
+                key={purchase.id}
+              >
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={purchase.user?.imageUrl} alt="Avatar" />
                   <AvatarFallback>
