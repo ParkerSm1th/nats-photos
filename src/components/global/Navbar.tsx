@@ -162,7 +162,8 @@ export function NavBar() {
                 <MenubarMenu>
                   <MenubarTrigger className="flex cursor-pointer flex-row justify-center gap-2 align-middle focus:bg-transparent data-[state=open]:bg-transparent">
                     {user?.imageUrl && (
-                      <Image
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
                         src={user?.imageUrl}
                         height={20}
                         width={20}

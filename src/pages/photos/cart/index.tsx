@@ -30,7 +30,7 @@ export default function Cart() {
           <div className="flex items-center justify-between" key={item.id}>
             <div className="flex flex-col items-start space-y-4 md:flex-row md:items-start md:space-x-4 md:space-y-0">
               {/* eslint-disable-next-line @next/next/no-img-element*/}
-              <Image
+              <img
                 src={item.link}
                 alt={item.id}
                 className="max-h-[50px] w-auto rounded-lg md:max-h-[150px]"
