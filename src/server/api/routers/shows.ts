@@ -5,9 +5,16 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import Jimp from "jimp";
 import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 import JPEG from "jpeg-js";
-import Redis from "ioredis";
+import fastDeepEqual from "fast-deep-equal/es6";
 import { clerkClient } from "@clerk/nextjs";
 import { type User } from "@clerk/nextjs/dist/types/server";
+import {
+  cacheGetJSON,
+  cacheSetJSON,
+  getRedisStatus,
+  invalidateCache,
+  reconnectRedis,
+} from "../utils/redis";
 
 const s3Service = new S3Service("natalies-photos");
 
@@ -154,22 +161,33 @@ export const showRouter = createTRPCRouter({
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
       });
-      // const client = new Redis("redis://default:********@us1-happy-crayfish-38252.upstash.io:38252");
-      // const cachedUrls = await client.get(`photos-${input.id}`);
-      // const urlsToAdd = [];
+      if (!getRedisStatus()?.isOpen) {
+        reconnectRedis();
+      }
+      const cachedUrls =
+        (await cacheGetJSON("showPhotosLinks", input.id)) ?? {};
+      let urlsToAdd = {
+        ...cachedUrls,
+      };
       const returnedPhotos = await Promise.all(
         photos.map((photo) => {
-          // const cachedUrl = cachedUrls?.find((c) => c.id === photo.id);
-          // let url = cachedUrl;
-          let url = "";
-          if (true) {
+          const cachedUrl = cachedUrls[photo.id];
+          let url = cachedUrl?.url;
+          if (
+            !url ||
+            (cachedUrl?.expiresAt && cachedUrl?.expiresAt < Date.now())
+          ) {
             url = s3Service.getPresignedLink(
               photo.id + "-watermark.jpg",
               604800
             );
-            // await kv.set(photo.id, url, {
-            //   ex: 604800,
-            // });
+            urlsToAdd = {
+              ...urlsToAdd,
+              [photo.id]: {
+                url,
+                expiresAt: Date.now() + 604700000,
+              },
+            };
           }
           return {
             ...photo,
@@ -177,7 +195,15 @@ export const showRouter = createTRPCRouter({
           };
         })
       );
+      if (!fastDeepEqual(urlsToAdd, cachedUrls))
+        await cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
       return returnedPhotos;
+    }),
+  invalidateShowPhotosLinksCache: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await invalidateCache("showPhotosLinks", input.id);
+      return true;
     }),
   getPresignedUploadLink: adminProcedure
     .input(
