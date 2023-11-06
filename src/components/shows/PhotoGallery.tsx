@@ -9,6 +9,8 @@ import SmallLogo from "../../public/images/WhiteSmallLogo.png";
 import { Spinner } from "../ui/ui/spinner";
 import { useAuth } from "@clerk/nextjs";
 import { trackEvent } from "@/utils/tracking";
+import clsx from "clsx";
+import { Checkbox } from "../ui/ui/checkbox";
 
 type PhotoResponse = Photo & {
   url: string;
@@ -18,10 +20,16 @@ export const PhotoGallery = ({
   id,
   showName,
   adminView,
+  bulkMode,
+  bulkSelections,
+  setBulkSelections,
 }: {
   id: string;
   showName: string;
   adminView?: boolean;
+  bulkMode?: boolean;
+  bulkSelections?: string[];
+  setBulkSelections?: (selections: string[]) => void;
 }) => {
   const { addToCart } = useCart();
   const { userId } = useAuth();
@@ -71,6 +79,17 @@ export const PhotoGallery = ({
     );
   }, [id, selectedImage, showName, userId]);
 
+  const toggleChecked = (photoId: string) => {
+    const currentBulkSelections = bulkSelections ?? [];
+    if (bulkSelections?.includes(photoId)) {
+      setBulkSelections?.(
+        currentBulkSelections.filter((item) => item !== photoId)
+      );
+    } else {
+      setBulkSelections?.([...currentBulkSelections, photoId]);
+    }
+  };
+
   const selectedImageIndex = !data
     ? -1
     : data.findIndex((item) => item.id === selectedImage?.id);
@@ -88,10 +107,19 @@ export const PhotoGallery = ({
           <div
             key={photo.id}
             className="relative min-h-[150px] min-w-full cursor-pointer"
-            onClick={() => {
-              setSelectedImage(photo);
-            }}
+            onClick={() =>
+              bulkMode ? toggleChecked(photo.id) : setSelectedImage(photo)
+            }
           >
+            {bulkMode && (
+              <Checkbox
+                className="absolute left-3 top-3 h-6 w-6 border-purple-300 text-white shadow-md data-[state=checked]:bg-purple-300"
+                checked={bulkSelections?.includes(photo.id)}
+                onClick={() => {
+                  toggleChecked(photo.id);
+                }}
+              />
+            )}
             {/*eslint-disable-next-line @next/next/no-img-element*/}
             <img
               src={photo.url}

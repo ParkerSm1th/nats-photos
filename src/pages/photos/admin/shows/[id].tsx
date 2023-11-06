@@ -73,6 +73,29 @@ export default function Show() {
       }
     );
 
+  const utils = api.useContext();
+
+  const deletePhotosMutation = api.shows.deletePhotos.useMutation();
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkSelections, setBulkSelections] = useState<string[]>([]);
+  const [isBulkDeleteLoading, setIsBulkDeleteLoading] = useState(false);
+
+  const bulkDelete = async () => {
+    setIsBulkDeleteLoading(true);
+    setBulkMode(false);
+    try {
+      await deletePhotosMutation.mutateAsync(bulkSelections);
+      await utils.shows.getShowPhotos.invalidate({
+        id,
+      });
+      setBulkSelections([]);
+    } catch (err) {
+      console.error(err);
+      setBulkMode(true);
+    }
+    setIsBulkDeleteLoading(false);
+  };
+
   return showName.isLoading || !showName.data ? (
     <SpinnerPage />
   ) : (
@@ -125,9 +148,38 @@ export default function Show() {
               </TabsTrigger>
             </TabsList>
             {currentTab === "photos" && (
-              <Button className="mb-4" onClick={() => setIsUploadOpen(true)}>
-                Upload Photos
-              </Button>
+              <div className="flex flex-row gap-2">
+                <Button
+                  className="mb-4 bg-slate-500 transition-all hover:bg-slate-600"
+                  onClick={() => setBulkMode(!bulkMode)}
+                  disabled={isBulkDeleteLoading}
+                >
+                  {bulkMode ? "Disable" : "Enable"} Bulk Mode
+                </Button>
+                {bulkMode || isBulkDeleteLoading ? (
+                  <Button
+                    className="mb-4"
+                    variant={"destructive"}
+                    onClick={() => void bulkDelete()}
+                    disabled={
+                      bulkSelections.length === 0 || isBulkDeleteLoading
+                    }
+                  >
+                    {isBulkDeleteLoading ? (
+                      <Spinner className="h-5 w-5" />
+                    ) : (
+                      `Delete ${bulkSelections.length} Photos`
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    className="mb-4"
+                    onClick={() => setIsUploadOpen(true)}
+                  >
+                    Upload Photos
+                  </Button>
+                )}
+              </div>
             )}
           </div>
           <TabsContent value="overview">
@@ -198,7 +250,14 @@ export default function Show() {
             </div>
           </TabsContent>
           <TabsContent value="photos">
-            <PhotoGallery id={id} showName={showName.data?.name} adminView />
+            <PhotoGallery
+              id={id}
+              showName={showName.data?.name}
+              adminView
+              bulkMode={bulkMode}
+              bulkSelections={bulkSelections}
+              setBulkSelections={setBulkSelections}
+            />
           </TabsContent>
           <TabsContent value="sub-shows">
             <ShowChildrenTable id={id} />
