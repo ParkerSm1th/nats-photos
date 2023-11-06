@@ -19,6 +19,7 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 interface DataTableProps<TData, TValue> {
@@ -55,6 +56,8 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
   });
+
+  const router = useRouter();
 
   return (
     <div>
@@ -114,6 +117,16 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="cursor-pointer"
+                  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                  onClick={async () => {
+                    const original = row.original as {
+                      id: string;
+                    };
+                    if (original) {
+                      await router.push(`/photos/admin/shows/${original.id}`);
+                    }
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
