@@ -87,28 +87,24 @@ export const PhotoGallery = ({
         {data.map((photo) => (
           <div
             key={photo.id}
-            className="relative min-h-[220px] min-w-[330px] cursor-pointer"
+            className="relative min-h-[150px] min-w-full cursor-pointer"
             onClick={() => {
               setSelectedImage(photo);
             }}
           >
-            <Image
+            {/*eslint-disable-next-line @next/next/no-img-element*/}
+            <img
               src={photo.url}
-              layout="responsive"
-              width={330}
-              height={220}
-              objectFit="cover"
               className="rounded-lg"
               alt={photo.id}
               placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRm knyJckliyjqTzSlT54b6bk+h0R//2Q=="
               loading="lazy"
               onLoad={() => {
                 setImagesLoaded((prev) => [...prev, photo.id]);
               }}
             />
             {!imagesLoaded.includes(photo.id) ? (
-              <div className="absolute left-0 top-0 flex h-[220px] w-[330px] items-center justify-center rounded-lg bg-gray-200 text-gray-600">
+              <div className="absolute left-0 top-0 flex min-h-full min-w-full items-center justify-center rounded-lg bg-gray-200 text-gray-600">
                 <Spinner />
               </div>
             ) : (

@@ -164,17 +164,13 @@ function Lightbox({
                 </span>
               </Button>
             )}
-            <Image
+            {/*eslint-disable-next-line @next/next/no-img-element*/}
+            <img
               src={selectedImage}
               alt="selected image"
-              width={400}
-              height={400}
               className="h-full w-full"
-              layout="responsive"
               placeholder="blur"
-              objectFit="contain"
               loading="lazy"
-              blurDataURL={selectedImage}
             />
           </div>
         </div>
