@@ -1,14 +1,14 @@
 import { SpinnerPage } from "@/components/global/Spinner";
+import { DownloadPhotoDialog } from "@/components/shows/DownloadPhotoDialog";
 import { Button } from "@/components/ui/ui/button";
 import { Card } from "@/components/ui/ui/card";
 import { Spinner } from "@/components/ui/ui/spinner";
 import { useToast } from "@/components/ui/ui/use-toast";
 import { api } from "@/utils/api";
+import { useIsMobile } from "@/utils/hooks/useIsMobile";
+import clsx from "clsx";
 import Image from "next/image";
 import { useState } from "react";
-import clsx from "clsx";
-import { useIsMobile } from "@/utils/hooks/useIsMobile";
-import { DownloadPhotoDialog } from "@/components/shows/DownloadPhotoDialog";
 
 export default function Purchases() {
   const { isLoading, data } = api.user.getPurchases.useQuery(undefined, {
@@ -62,13 +62,12 @@ export default function Purchases() {
           {data?.map((purchase) => (
             <Card key={purchase.id} className="bg-slate-50">
               <div className="min-w-[330px]">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={purchase.image}
                   alt={purchase.photoId}
-                  layout="responsive"
                   width={330}
                   height={220}
-                  objectFit="cover"
                   className="rounded-t-lg"
                 />
               </div>
