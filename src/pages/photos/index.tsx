@@ -7,7 +7,6 @@ import Link from "next/link";
 export default function PhotosHome() {
   const shows = api.shows.getAll.useQuery(
     {
-      limit: 5,
       orderByStartDate: "desc",
     },
     {
