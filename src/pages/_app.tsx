@@ -1,12 +1,13 @@
 import { DashboardLayout } from "@/components/global/Layout";
+import { Toaster } from "@/components/ui/ui/toaster";
 import { api } from "@/utils/api";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 
 import "@/styles/globals.css";
 
-import { Toaster } from "@/components/ui/ui/toaster";
-import { ClerkProvider } from "@clerk/nextjs";
 import type { NextPage } from "next";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import type { AppType } from "next/app";
 import Head from "next/head";
 import { CartProvider } from "@/providers/CartProvider";
@@ -60,6 +61,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
       </Head>
       <ClerkProvider>
         <UploadsProvider>
+          <Analytics />
           <CartProvider>{getLayout(<Component {...pageProps} />)}</CartProvider>
         </UploadsProvider>
       </ClerkProvider>
