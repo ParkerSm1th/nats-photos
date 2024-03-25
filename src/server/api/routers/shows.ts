@@ -1,13 +1,14 @@
-import { type Show as PrismaShow, type Show } from "@prisma/client";
-import { z } from "zod";
-import { S3Service } from "../services/S3Service/S3Service";
-import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
-import Jimp from "jimp";
-import { WatermarkService } from "../services/WatermarkService/WatermarkService";
-import JPEG from "jpeg-js";
-import fastDeepEqual from "fast-deep-equal/es6";
 import { clerkClient } from "@clerk/nextjs";
-import { type User } from "@clerk/nextjs/dist/types/server";
+import type { User } from "@clerk/nextjs/dist/types/server";
+import type { Show as PrismaShow, Show } from "@prisma/client";
+import fastDeepEqual from "fast-deep-equal/es6";
+import Jimp from "jimp";
+import JPEG from "jpeg-js";
+import { z } from "zod";
+
+import { S3Service } from "../services/S3Service/S3Service";
+import { WatermarkService } from "../services/WatermarkService/WatermarkService";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import {
   cacheGetJSON,
   cacheSetJSON,
@@ -161,6 +162,7 @@ export const showRouter = createTRPCRouter({
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
       });
+      // TODO: Make this a helper function
       if (!getRedisStatus()?.isOpen) {
         reconnectRedis();
       }
@@ -321,6 +323,44 @@ export const showRouter = createTRPCRouter({
         []
       );
       return reducedPurchases;
+    }),
+  getUserPurchases: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().optional(),
+        sinceSeconds: z.number().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const purchases = await ctx.prisma.purchases.findMany({
+        where: {
+          userId: input.userId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        ...(input.limit
+          ? {
+              take: input.limit,
+            }
+          : {}),
+      });
+      const user = await clerkClient.users.getUser(input.userId);
+      const purchasesWithLinks = purchases.map((purchase) => {
+        const link = s3Service.getPresignedLink(
+          purchase.photoId + "-watermark.jpg",
+          604800
+        );
+        return {
+          ...purchase,
+          link,
+        };
+      });
+      return {
+        user,
+        purchases: purchasesWithLinks,
+      };
     }),
   addPhoto: adminProcedure
     .input(

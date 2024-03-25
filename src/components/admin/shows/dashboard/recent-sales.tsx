@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/ui/avatar";
 import clsx from "clsx";
+import Link from "next/link";
 
 export default function RecentSales({ showId }: { showId: string }) {
   const { data: purchases, isLoading: isPurchasesLoading } =
@@ -56,21 +57,26 @@ export default function RecentSales({ showId }: { showId: string }) {
                 })}
                 key={purchase.id}
               >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={purchase.user?.imageUrl} alt="Avatar" />
-                  <AvatarFallback>
-                    {purchase.user?.firstName?.charAt(0)}
-                    {purchase.user?.lastName?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
+                <Link href={`/photos/admin/users/${purchase?.user?.id}`}>
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={purchase.user?.imageUrl} alt="Avatar" />
+                    <AvatarFallback>
+                      {purchase.user?.firstName?.charAt(0)}
+                      {purchase.user?.lastName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    {purchase.user?.firstName} {purchase.user?.lastName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {purchase.photosPurchased}
-                  </p>
+                  <Link href={`/photos/admin/users/${purchase?.user?.id}`}>
+                    <p className="text-sm font-medium leading-none">
+                      {purchase.user?.firstName} {purchase.user?.lastName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {purchase.photosPurchased}
+                    </p>
+                  </Link>
                 </div>
+
                 <div className="ml-auto font-medium text-green-500">
                   +${purchase.photosPurchased * 5}.00
                 </div>
