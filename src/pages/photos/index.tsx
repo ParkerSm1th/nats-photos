@@ -1,4 +1,4 @@
-import { Show } from "@/common/types";
+import type { Show } from "@/common/types";
 import { SpinnerPage } from "@/components/global/Spinner";
 import { Card, CardContent, CardHeader } from "@/components/ui/ui/card";
 import { api } from "@/utils/api";
@@ -15,6 +15,7 @@ export default function PhotosHome() {
       refetchOnReconnect: false,
     }
   );
+
   return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-8 ">
       <div className="text-center">
@@ -32,7 +33,7 @@ export default function PhotosHome() {
         "No shows to display"
       ) : (
         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {shows.data.map((show: Show) => (
+          {shows.data.filter((show) => show.isPublic).map((show: Show) => (
             <Link href={`/photos/shows/${show.slug}`} key={show.id}>
               <Card className="cursor-pointer">
                 <CardHeader className="space-y-0 pb-3 pt-4">

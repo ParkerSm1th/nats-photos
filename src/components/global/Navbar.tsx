@@ -45,7 +45,7 @@ import { CartIcon } from "./CartIcon";
 export function NavBar() {
   const shows = api.shows.getAll.useQuery(
     {
-      limit: 5,
+      limit: 10,
       orderByStartDate: "desc",
     },
     {
@@ -82,7 +82,7 @@ export function NavBar() {
                       return <FakeListItem key={i} />;
                     })
                   ) : shows.data ? (
-                    shows.data?.map((show: Show) => {
+                    shows.data?.filter(s => s.isPublic).map((show: Show) => {
                       return (
                         <Link
                           href={`/photos/shows/${show.slug}`}

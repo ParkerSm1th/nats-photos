@@ -27,6 +27,7 @@ model Show {
     parentId  String?
     children  Show[]    @relation("ParentShow")
     Photo     Photo[]
+    isPublic  Boolean   @default(true)
 
     @@index([parentId])
 }

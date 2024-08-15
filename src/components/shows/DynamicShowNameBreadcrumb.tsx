@@ -1,4 +1,4 @@
-import { Show } from "@/common/types";
+import type { Show } from "@/common/types";
 import { api } from "@/utils/api";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -51,7 +51,7 @@ export const DynamicShowNameBreadcrumb = ({
               // we want the href to be the slug of the show, and all the slugs before it
               // so if we have /shows/2021/summer-classic, the array will be ["shows", "2021", "summer-classic"]
               // then we want to display a breadcrumb like this:
-              href={`/${allSlugs
+              href={show.slug === 'shows' ? '/photos' : `/${allSlugs
                 .slice(0, allSlugs.indexOf(show.slug) + 1)
                 .join("/")}`}
             >

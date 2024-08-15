@@ -1,4 +1,5 @@
 import { clerkClient } from "@clerk/nextjs";
+
 import type { User } from "@clerk/nextjs/dist/types/server";
 import type { Show as PrismaShow, Show } from "@prisma/client";
 import fastDeepEqual from "fast-deep-equal/es6";
@@ -203,7 +204,7 @@ export const showRouter = createTRPCRouter({
     }),
   invalidateShowPhotosLinksCache: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       await invalidateCache("showPhotosLinks", input.id);
       return true;
     }),
@@ -214,7 +215,7 @@ export const showRouter = createTRPCRouter({
         type: z.string(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(({ input }) => {
       const s3Service = new S3Service("natalies-photos");
       const preSign = s3Service.getPresignedUploadLink(
         {
@@ -436,6 +437,8 @@ const fromPrisma = (show: ShowWithChildren, children = true): Show => {
     createdAt: show.createdAt!,
     updatedAt: show.updatedAt!,
     parentId: show.parentId ? show.parentId : null,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    isPublic: show.isPublic!,
     ...(children && {
       children: show.children?.map((s) => fromPrisma(s, false)),
     }),
