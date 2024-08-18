@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { prisma } from "@/server/db";
-import { trackEvent } from "@/utils/tracking";
 import { buffer } from "micro";
-import { type NextApiRequest, type NextApiResponse } from "next";
+
+import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 
 export const config = {
@@ -19,6 +19,16 @@ type Metadata = {
   userId: string;
   photos: string;
 };
+
+function combinePhotosFromMetadata(metadata: Record<string, string> & { numKeys: number }) {
+  const photoIds: string[] = [];
+  for (let i = 1; i <= metadata.numKeys; i++) {
+      const key = `photos-${i}`;
+      const chunk = JSON.parse(metadata[key]!) as string[];
+      photoIds.push(...chunk);
+  }
+  return photoIds;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -48,9 +58,12 @@ export default async function handler(
         const completedEvent = event.data.object as Stripe.Checkout.Session & {
           metadata: Metadata;
         };
-        const { userId, photos } = completedEvent.metadata;
+        const photos = combinePhotosFromMetadata(
+          completedEvent.metadata as unknown as Record<string, string> & { numKeys: number }
+        );
+        const { userId } = completedEvent.metadata;
         if (!photos) return res.send(200);
-        const photosParsed = JSON.parse(photos) as string[];
+        const photosParsed = photos;
         console.log("💰 Payment received!", completedEvent);
         for (const photo of photosParsed) {
           try {

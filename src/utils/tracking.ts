@@ -1,5 +1,6 @@
 import * as amplitude from "@amplitude/analytics-browser";
 import { useAuth } from "@clerk/nextjs";
+import { StripeError } from "@stripe/stripe-js";
 
 export type TrackingEvent =
   | {
@@ -31,6 +32,11 @@ export type TrackingEvent =
     }
   | {
       type: "photos.checkout.click";
+      cart: string;
+    }
+  | {
+      type: "photos.checkout.error";
+      error: StripeError;
       cart: string;
     }
   | {

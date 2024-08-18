@@ -4,6 +4,7 @@ import { useCart } from "@/providers/CartProvider";
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { api } from "@/utils/api";
+import { trackEvent } from "@/utils/tracking";
 import { useAuth } from "@clerk/nextjs";
 import { loadStripe } from "@stripe/stripe-js";
 import { redirect } from "next/dist/server/api-utils";
@@ -12,7 +13,6 @@ import { useState } from "react";
 
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/ui/spinner";
-import { trackEvent } from "@/utils/tracking";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -59,6 +59,18 @@ const CheckoutButton = () => {
       const { error } = await stripe.redirectToCheckout({
         sessionId: data.sessionId,
       });
+      trackEvent({
+          type: 'photos.checkout.error',
+          error: error,
+          cart: cart
+            .map((item) => ({
+              photoId: item.id,
+              showId: item.show.id,
+              showName: item.show.name,
+            }))
+            .toString(),
+      })
+
       setLoading(false);
 
       if (error) {
