@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { ReactElement } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
 import { api } from "@/utils/api";
@@ -16,6 +16,9 @@ import { faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { faBars, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import SmallLogo from "../../public/images/WhiteSmallLogo.png";
+
+import Presley from "../../public/images/home/private/presley.jpg";
+import { faEnvelope } from "@fortawesome/pro-regular-svg-icons";
 
 const NAV_LINKS = [
   {
@@ -33,6 +36,10 @@ const NAV_LINKS = [
   {
     href: "/photos",
     label: "Get Your Photos",
+  },
+  {
+    href: "/#private",
+    label: "Private Sessions",
   },
   {
     href: "/#contact",
@@ -121,46 +128,88 @@ function Home() {
   const [selectedImage, setSelectedImage] = useState<string>("");
   const portfolioItems = [
     {
-      title: "Maggie & Ravello",
-      showName: "Estes Park, 2023",
-      image:
-        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/2_axc1ll.jpg",
-    },
-    {
-      title: "Leslie & Jax",
-      showName: "Estes Park, 2023",
-      image:
-        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816627/1_gk0cqr.jpg",
-    },
-    {
       title: "Marti & Panda Pop",
       showName: "Estes Park, 2023",
       image:
         "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816628/3_cwkwyv.jpg",
     },
     {
-      title: "Megan & Hobbs",
-      showName: "Estes Park, 2023",
+      title: "Blondie",
+      showName: "Parker, 2024",
       image:
-        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816628/5_h4lqqi.jpg",
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298215/WhatsApp_Image_2024-08-20_at_19.19.08_xgk1ft.jpg",
     },
     {
-      title: "Presley & Arizona",
-      showName: "Estes Park, 2023",
+      title: "Megan & Tiny",
+      showName: "Estes Park, 2024",
       image:
-        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1691816629/4_ewj4xy.jpg",
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298940/DSC04702-min_ezxdeo.jpg",
     },
     {
-      title: "Maggie & Ravello",
-      showName: "CO Horse Park, 2023",
+      title: "Iris & Deacon",
+      showName: "Parker, 2024",
       image:
-        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1693633326/DSC04427_fggidz.jpg",
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298215/WhatsApp_Image_2024-08-20_at_19.24.04_tgsrsc.jpg",
     },
     {
-      title: "Hadley & Gracie",
-      showName: "CO Horse Park, 2023",
+      title: "Presley & Gator",
+      showName: "Parker, 2024",
       image:
-        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1693633326/DSC04256_rlmshz.jpg",
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298215/WhatsApp_Image_2024-08-20_at_19.30.32_grpmev.jpg",
+    },
+    {
+      title: "Avi",
+      showName: "Parker, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298215/WhatsApp_Image_2024-08-20_at_19.25.19_vjhcuo.jpg",
+    },
+    {
+      title: "Iris & Tiny",
+      showName: "Parker, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.30.46_awvrcq.jpg",
+    },
+    {
+      title: "Iris & Deacon",
+      showName: "Parker, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.35.25_tdabre.jpg",
+    },
+    {
+      title: "Laila & Chester",
+      showName: "Parker, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.30.41_giooyf.jpg",
+    },
+    {
+      title: "Rory, Presley, Hadley & Panda",
+      showName: "Estes Park, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.44.44_yjptw0.jpg",
+    },
+    {
+      title: "Iris & Deacon",
+      showName: "Estes Park, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.45.57_slv0o5.jpg",
+    },
+    {
+      title: "Nora, Maggie, & Sir",
+      showName: "Estes Park, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.53.08_ibwqkf.jpg",
+    },
+    {
+      title: "Ellie",
+      showName: "Parker, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725298213/WhatsApp_Image_2024-08-20_at_19.46.24_h2kasf.jpg",
+    },
+    {
+      title: "Presley & Gator",
+      showName: "Parker, 2024",
+      image:
+        "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725299287/IMG_8602-min_gzvfiy.jpg",
     },
   ];
 
@@ -176,6 +225,14 @@ function Home() {
   const [expanded, setExpanded] = useState(false);
 
   const itemsToShow = expanded ? portfolioItems : portfolioItems.slice(0, 6);
+
+  const { data, isLoading } = api.shows.showSchedule.useQuery();
+
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+    }
+  }, [data]);
 
   return (
     <>
@@ -266,14 +323,79 @@ function Home() {
             className="h-full w-screen object-cover"
           />
         </div>
+        <div
+          className="mb-10 flex w-full flex-col items-center justify-center gap-4 px-8 pt-12 lg:px-0"
+          id="private"
+        >
+          <h2 className="mb-12 text-center text-2xl font-bold">
+            Private Sessions
+          </h2>
+          <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
+            <div className="flex max-w-md flex-col items-center justify-center gap-12">
+              <div className="flex flex-row items-center justify-center gap-4">
+                <Image
+                  src={Presley}
+                  alt="Presley & Gator"
+                  className="max-h-44 w-auto md:max-h-64"
+                />
+                <Image
+                  src={'https://res.cloudinary.com/dqdjvho5d/image/upload/v1725302003/ellie_u2zmtz.jpg'}
+                  alt="Ellie"
+                  width={200}
+                  height={200}
+                  className="max-h-44 w-auto md:max-h-64"
+                />
+              </div>
+              <div className="flex max-w-md flex-col items-center justify-center gap-2">
+                <h2 className="text-center text-2xl">Private Session</h2>
+                <p className="text-center">
+                  Private sessions are based at <strong>$200</strong> for an
+                  1hr-1.5hr long shoot. With this package, you get 5 free
+                  pictures, outfit changes, and no extra pet fee if you choose
+                  to bring a furry friend. All other pictures that you want to
+                  purchase will be $5.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-8">
+              <div className="flex max-w-md flex-col items-center justify-center gap-2">
+                <h2 className="text-center text-2xl">3 Buddy Session</h2>
+                <p className="text-center">
+                  Grab 3 friends and plan a date! This session is based at a
+                  price of <strong>$400</strong>. This session will be a 2hr
+                  session and will include one outfit change and 5 free pictures
+                  for each person. All other pictures that you or your party
+                  will want to purchase will be $5.
+                </p>
+              </div>
+              <div className="flex max-w-md flex-col items-center justify-center gap-2">
+                <div className="flex flex-col items-center">
+                  <h2 className="text-center text-2xl">Barn Package</h2>
+                  <span className="text-sm font-bold text-purple-400">
+                    Best Deal!
+                  </span>
+                </div>
+                <p className="text-center">
+                  Wrangle your barn buddies and horses! Included in this package
+                  deal is 5 or more people & horses, one outfit change, and five
+                  free pictures per person. This package starts at{" "}
+                  <strong>$500</strong> and will be located at your residing
+                  barn! It will be an 1hr-1.5hr per person, so prepare
+                  accordingly!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="my-16 flex flex-col gap-4" id="contact">
           <h2 className="text-center text-2xl font-bold">
             Let's work together!
           </h2>
-          <div className="text-center">
+          <div className="flex md:flex-row flex-col items-center justify-center gap-4 text-center">
             <a
               href="https://www.instagram.com/natalie_lockhart_photos/"
               target="_blank"
+              className="w-[300px]"
             >
               <div className="m-auto mt-2 flex w-fit flex-row items-center justify-between align-middle">
                 <div className="rounded-md bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5">
@@ -284,6 +406,23 @@ function Home() {
                 </div>
                 <p className="text-md px-2 font-medium">
                   @natalie_lockhart_photos
+                </p>
+              </div>
+            </a>
+            <a
+              href="mailto:natalielockhartphotos@gmail.com"
+              target="_blank"
+              className="w-[300px]"
+            >
+              <div className="m-auto mt-2 flex w-fit flex-row items-center justify-between align-middle">
+                <div className="p-0.5">
+                  <FontAwesomeIcon
+                    icon={faEnvelope}
+                    className="h-6 w-6 text-black"
+                  />
+                </div>
+                <p className="text-md px-2 font-medium">
+                  natalielockhartphotos@gmail.com
                 </p>
               </div>
             </a>
@@ -299,23 +438,15 @@ function Home() {
                     setDate(date);
                   }}
                   className="rounded-md border"
-                  bookedDays={[
-                    {
-                      date: new Date(2023, 8, 17),
-                      title: "Four Winds - Schooling Show",
-                      link: "https://goo.gl/maps/bkGmkizy7A6A4Uww6",
-                    },
-                    {
-                      date: new Date(2023, 8, 23),
-                      title: "Fox Hill",
-                      link: "https://goo.gl/maps/dXF2314tEEUqgP249",
-                    },
-                    {
-                      date: new Date(2023, 8, 24),
-                      title: "Fox Hill",
-                      link: "https://goo.gl/maps/dXF2314tEEUqgP249",
-                    },
-                  ]}
+                  bookedDays={
+                    isLoading || !data
+                      ? []
+                      : data?.map((show) => ({
+                          date: new Date(show.date),
+                          title: show.name,
+                          location: show.location,
+                        }))
+                  }
                 />
               </div>
               <div className="max-w-sm text-center">

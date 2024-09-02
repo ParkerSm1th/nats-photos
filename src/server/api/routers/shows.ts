@@ -422,6 +422,40 @@ export const showRouter = createTRPCRouter({
       }
       return photo;
     }),
+  showSchedule: publicProcedure
+    .query(async ({ ctx }) => {
+      const GOOGLE_CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/calendars/';
+      const CALENDAR_ID = '6764148d000a517930750ad5a8e9485d871418d6c0a4b90e87aa770efddde528@group.calendar.google.com';
+      const PUBLIC_KEY = 'AIzaSyDM1uL-slgZxvXbAEFJg2M78gTIqZxW1x0';
+
+      const dataUrl = [GOOGLE_CALENDAR_URL, CALENDAR_ID, '/events?key=', PUBLIC_KEY].join('');
+
+      const response = await fetch(dataUrl);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const data: {
+        items: {
+          summary: string;
+          start: { date: string };
+          location: string;
+        }[]
+      } = await response.json();
+
+      const shows = data.items.map((item) => {
+        const datePlusOne = new Date(item.start.date);
+        datePlusOne.setDate(datePlusOne.getDate() + 1);
+
+        const dateBackToString = datePlusOne.toISOString().split('T')[0] ?? '';
+
+        return {
+          name: item.summary,
+          date: dateBackToString,
+          location: item.location ? item.location.split(',')[0] : 'Colorado',
+        }
+      });
+
+      return shows;
+    }),
 });
 
 type ShowWithChildren = Partial<PrismaShow> & { children?: Show[] };

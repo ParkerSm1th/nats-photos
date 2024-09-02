@@ -1,10 +1,6 @@
 import { buttonVariants } from "@/components/ui/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  faChevronLeft,
-  faChevronRight,
-  faMapPin,
-} from "@fortawesome/pro-solid-svg-icons";
+import { faChevronLeft, faChevronRight, faMapPin } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
 import { DayClickEventHandler, DayPicker } from "react-day-picker";
@@ -14,7 +10,7 @@ export type CalendarPropsWithEvents = CalendarProps & {
   bookedDays: {
     date: Date;
     title: string;
-    link?: string;
+    location?: string;
   }[];
 };
 
@@ -25,36 +21,51 @@ function Calendar({
   bookedDays,
   ...props
 }: CalendarPropsWithEvents) {
-  const bookedDaysAsDates = bookedDays.map((day) => day.date.toString());
+  const bookedDaysAsDates = bookedDays.map((day) => {
+    const dayWithNoTime = new Date(day.date);
+    dayWithNoTime.setHours(0, 0, 0, 0);
+    return dayWithNoTime.toString();
+  });
+
+  const todayWithNoTime = new Date();
+  todayWithNoTime.setHours(0, 0, 0, 0);
+
   const [selectedDay, setSelectedDay] = React.useState<string>(
-    new Date().toISOString()
+    todayWithNoTime.toString()
   );
 
-  const handleDayClick: DayClickEventHandler = (day, modifiers) => {
+  const handleDayClick: DayClickEventHandler = (day) => {
     setSelectedDay(day.toString());
   };
 
   const footer = React.useMemo(() => {
     if (!bookedDays.length) return null;
     if (bookedDaysAsDates.includes(selectedDay)) {
-      const bookedDay = bookedDays.find(
-        (day) => day.date.toString() === selectedDay
-      );
+      const bookedDay = bookedDays.find((day) => {
+        const dayWithNoTime = new Date(day.date);
+        dayWithNoTime.setHours(0, 0, 0, 0);
+        return dayWithNoTime.toString() === selectedDay;
+      });
       if (!bookedDay)
         return <div className="mt-2">Nothing scheduled for this day</div>;
       return (
-        <a className="mt-2" href={bookedDay.link ?? ""} target="_blank">
+        <a className="mt-2" target="_blank">
           <div
             className="mt-2 flex flex-col items-center justify-center font-medium"
             key={selectedDay}
           >
             <div className="flex items-center gap-1 text-center">
               {bookedDay.title}
-              {bookedDay.link && (
-                <FontAwesomeIcon
-                  className="h-4 w-4 text-purple-500"
-                  icon={faMapPin}
-                />
+            </div>
+            <div className="flex items-center gap-1 text-center">
+              {bookedDay.location && (
+                <>
+                  <FontAwesomeIcon
+                    className="h-4 w-4 text-purple-500"
+                    icon={faMapPin}
+                  />
+                  <p>{bookedDay.location}</p>
+                </>
               )}
             </div>
           </div>
