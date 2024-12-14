@@ -64,7 +64,7 @@ function Lightbox({
           &#8203;
         </span>
         <div
-          className="m-8 inline-block w-full max-w-screen-md transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:align-middle"
+          className="m-8 inline-block max-w-screen-md w-auto transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:align-middle"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-headline"
