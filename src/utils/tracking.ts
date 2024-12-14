@@ -1,6 +1,5 @@
 import * as amplitude from "@amplitude/analytics-browser";
-import { useAuth } from "@clerk/nextjs";
-import { StripeError } from "@stripe/stripe-js";
+import type { StripeError } from "@stripe/stripe-js";
 
 export type TrackingEvent =
   | {

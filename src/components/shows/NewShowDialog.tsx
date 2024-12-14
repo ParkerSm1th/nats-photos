@@ -52,7 +52,6 @@ export const NewShowDialog = ({
   open,
   onClose,
   parentShowId,
-  ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
   open: boolean;
   onClose: () => void;

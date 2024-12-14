@@ -1,12 +1,10 @@
 import { clerkClient } from "@clerk/nextjs";
-
 import type { User } from "@clerk/nextjs/dist/types/server";
 import type { Show as PrismaShow, Show } from "@prisma/client";
 import fastDeepEqual from "fast-deep-equal/es6";
 import Jimp from "jimp";
 import JPEG from "jpeg-js";
 import { z } from "zod";
-
 import { S3Service } from "../services/S3Service/S3Service";
 import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
@@ -422,40 +420,46 @@ export const showRouter = createTRPCRouter({
       }
       return photo;
     }),
-  showSchedule: publicProcedure
-    .query(async ({ ctx }) => {
-      const GOOGLE_CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/calendars/';
-      const CALENDAR_ID = '6764148d000a517930750ad5a8e9485d871418d6c0a4b90e87aa770efddde528@group.calendar.google.com';
-      const PUBLIC_KEY = 'AIzaSyDM1uL-slgZxvXbAEFJg2M78gTIqZxW1x0';
+  showSchedule: publicProcedure.query(async () => {
+    const GOOGLE_CALENDAR_URL =
+      "https://www.googleapis.com/calendar/v3/calendars/";
+    const CALENDAR_ID =
+      "6764148d000a517930750ad5a8e9485d871418d6c0a4b90e87aa770efddde528@group.calendar.google.com";
+    const PUBLIC_KEY = "AIzaSyDM1uL-slgZxvXbAEFJg2M78gTIqZxW1x0";
 
-      const dataUrl = [GOOGLE_CALENDAR_URL, CALENDAR_ID, '/events?key=', PUBLIC_KEY].join('');
+    const dataUrl = [
+      GOOGLE_CALENDAR_URL,
+      CALENDAR_ID,
+      "/events?key=",
+      PUBLIC_KEY,
+    ].join("");
 
-      const response = await fetch(dataUrl);
+    const response = await fetch(dataUrl);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const data: {
-        items: {
-          summary: string;
-          start: { date: string };
-          location: string;
-        }[]
-      } = await response.json();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const data: {
+      items: {
+        summary: string;
+        start: { date: string };
+        location: string;
+      }[];
+    } = await response.json();
 
-      const shows = data.items.map((item) => {
-        const datePlusOne = new Date(item.start.date);
-        datePlusOne.setDate(datePlusOne.getDate() + 1);
+    const shows = data.items.map((item) => {
+      const datePlusOne = new Date(item.start.date);
+      datePlusOne.setDate(datePlusOne.getDate() + 1);
 
-        const dateBackToString = datePlusOne.toISOString().split('T')[0] ?? '';
+      const dateBackToString = datePlusOne.toISOString().split("T")[0] ?? "";
 
-        return {
-          name: item.summary,
-          date: dateBackToString,
-          location: item.location ? item.location.split(',')[0] : 'Colorado',
-        }
-      });
+      return {
+        name: item.summary,
+        date: dateBackToString,
+        location: item.location ? item.location.split(",")[0] : "Colorado",
+      };
+    });
 
-      return shows;
-    }),
+    return shows;
+  }),
 });
 
 type ShowWithChildren = Partial<PrismaShow> & { children?: Show[] };

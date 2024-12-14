@@ -3,11 +3,9 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import Jimp from "jimp";
 import { z } from "zod";
 
 import { S3Service } from "../services/S3Service/S3Service";
-import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 
 const s3Service = new S3Service("natalies-photos");
 export const userRouter = createTRPCRouter({

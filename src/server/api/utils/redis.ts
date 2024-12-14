@@ -1,6 +1,5 @@
 /* Inspiration for this way of using redis was from my experience at Magical (getmagical.com) */
 
-import { type Photo } from "@prisma/client";
 import { createClient } from "redis";
 
 interface RedisStorage {

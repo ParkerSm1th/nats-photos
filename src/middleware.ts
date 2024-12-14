@@ -3,7 +3,6 @@ import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { HOSTNAME, isAdmin as isUserAdmin } from "./lib/utils";
-import { trackEvent } from "./utils/tracking";
 
 const publicPaths = [
   "/",

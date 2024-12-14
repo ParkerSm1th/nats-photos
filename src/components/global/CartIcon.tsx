@@ -1,7 +1,4 @@
-import {
-  faCartShopping,
-  faShoppingCart,
-} from "@fortawesome/pro-regular-svg-icons";
+import { faCartShopping } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const CartIcon = ({ size }: { size: number }) => {

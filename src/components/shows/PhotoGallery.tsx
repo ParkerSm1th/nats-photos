@@ -1,15 +1,12 @@
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import Lightbox from "../images/Lightbox";
 import { useCart } from "@/providers/CartProvider";
 import { api } from "@/utils/api";
-import { Photo } from "@prisma/client";
+import type { Photo } from "@prisma/client";
 import { SpinnerPage } from "../global/Spinner";
-import SmallLogo from "../../public/images/WhiteSmallLogo.png";
 import { Spinner } from "../ui/ui/spinner";
 import { useAuth } from "@clerk/nextjs";
 import { trackEvent } from "@/utils/tracking";
-import clsx from "clsx";
 import { Checkbox } from "../ui/ui/checkbox";
 
 type PhotoResponse = Photo & {

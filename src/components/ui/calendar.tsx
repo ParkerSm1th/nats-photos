@@ -1,9 +1,14 @@
 import { buttonVariants } from "@/components/ui/ui/button";
 import { cn } from "@/lib/utils";
-import { faChevronLeft, faChevronRight, faMapPin } from "@fortawesome/pro-solid-svg-icons";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faMapPin,
+} from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as React from "react";
-import { DayClickEventHandler, DayPicker } from "react-day-picker";
+import type { DayClickEventHandler } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 export type CalendarPropsWithEvents = CalendarProps & {
@@ -113,10 +118,10 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => (
+        IconLeft: () => (
           <FontAwesomeIcon className="h-4 w-4" icon={faChevronLeft} />
         ),
-        IconRight: ({ ...props }) => (
+        IconRight: () => (
           <FontAwesomeIcon className="h-4 w-4" icon={faChevronRight} />
         ),
       }}

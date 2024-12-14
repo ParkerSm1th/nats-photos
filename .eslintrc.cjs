@@ -16,14 +16,7 @@ const config = {
     "@typescript-eslint/array-type": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/no-empty-function": "off",
-
-    "@typescript-eslint/consistent-type-imports": [
-      "warn",
-      {
-        prefer: "type-imports",
-        fixStyle: "inline-type-imports",
-      },
-    ],
+    "@typescript-eslint/consistent-type-imports": "error",
     "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     "@typescript-eslint/prefer-optional-chain": "off",

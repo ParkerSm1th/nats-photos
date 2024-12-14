@@ -3,15 +3,11 @@ import { DynamicShowNameBreadcrumb } from "@/components/shows/DynamicShowNameBre
 import { PhotoGallery } from "@/components/shows/PhotoGallery";
 import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
-import { trackEvent } from "@/utils/tracking";
-import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 export default function Show() {
   const router = useRouter();
-  const { userId } = useAuth();
   const slugs = router.query.slug as string[];
   const furthestRightSlug = slugs ? slugs[slugs.length - 1] : null;
   const show = api.shows.getShowBySlug.useQuery(

@@ -2,7 +2,7 @@ import { AlertDialog } from "@/components/global/AlertDialog";
 import { NewShowDialog } from "@/components/shows/NewShowDialog";
 import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
-import { Show } from "@prisma/client";
+import type { Show } from "@prisma/client";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { columns } from "../../../../components/admin/columns";

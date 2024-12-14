@@ -1,13 +1,11 @@
 import {
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   Card,
 } from "@/components/ui/ui/card";
 import { Spinner } from "@/components/ui/ui/spinner";
 import { api } from "@/utils/api";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/ui/avatar";
 
 export default function Stats({ showId }: { showId: string }) {
   const { data: stats, isLoading: isStatsLoading } =

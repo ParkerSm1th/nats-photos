@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/ui/use-toast";
 import { api } from "@/utils/api";
 import { useIsMobile } from "@/utils/hooks/useIsMobile";
 import clsx from "clsx";
-import Image from "next/image";
 import { useState } from "react";
 
 export default function Purchases() {

@@ -7,7 +7,6 @@ import { api } from "@/utils/api";
 import { trackEvent } from "@/utils/tracking";
 import { useAuth } from "@clerk/nextjs";
 import { loadStripe } from "@stripe/stripe-js";
-import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -60,16 +59,16 @@ const CheckoutButton = () => {
         sessionId: data.sessionId,
       });
       trackEvent({
-          type: 'photos.checkout.error',
-          error: error,
-          cart: cart
-            .map((item) => ({
-              photoId: item.id,
-              showId: item.show.id,
-              showName: item.show.name,
-            }))
-            .toString(),
-      })
+        type: "photos.checkout.error",
+        error: error,
+        cart: cart
+          .map((item) => ({
+            photoId: item.id,
+            showId: item.show.id,
+            showName: item.show.name,
+          }))
+          .toString(),
+      });
 
       setLoading(false);
 

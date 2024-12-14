@@ -1,4 +1,3 @@
-import { api } from "@/utils/api";
 import { faTrash, faUpload } from "@fortawesome/pro-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "../../ui/ui/button";
@@ -8,20 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../ui/ui/dialog";
-import { useState } from "react";
 import { v4 as uuid } from "uuid";
 import { Spinner } from "@/components/ui/ui/spinner";
-import imageCompression from "browser-image-compression";
 import { useUploadQueue } from "@/providers/UploadsProvider";
 import clsx from "clsx";
-
-type UploadableFile = {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  file: File;
-};
 
 export const UploadPhotoDialog = ({
   className,
@@ -33,7 +22,6 @@ export const UploadPhotoDialog = ({
   onClose: () => void;
   showId: string;
 }) => {
-  const [files, setFiles] = useState<UploadableFile[]>([]);
   const { queue, addToQueue, removeFromQueue, triggerUpload, loading } =
     useUploadQueue();
 

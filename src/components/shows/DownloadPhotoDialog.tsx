@@ -1,6 +1,3 @@
-import { api } from "@/utils/api";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +13,6 @@ export const DownloadPhotoDialog = ({
   open,
   onClose,
   imageUrl,
-  ...props
 }: React.HTMLAttributes<HTMLDivElement> & {
   open: boolean;
   onClose: () => void;

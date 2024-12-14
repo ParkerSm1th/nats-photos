@@ -19,7 +19,7 @@ export type NextPageWithLayout = NextPage & {
 
 const MainApp: AppType<{ session: Session | null }> = ({
   Component,
-  pageProps: { session, ...pageProps },
+  pageProps: { ...pageProps },
 }) => {
   const getLayout =
     (Component as NextPageWithLayout).getLayout ??

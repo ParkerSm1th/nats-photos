@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 
-import { Show } from "@/common/types";
+import type { Show } from "@/common/types";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -38,8 +38,6 @@ import {
 import { Skeleton } from "../ui/ui/skeleton";
 import { Spinner } from "../ui/ui/spinner";
 import { useCart } from "@/providers/CartProvider";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart } from "@fortawesome/pro-regular-svg-icons";
 import { CartIcon } from "./CartIcon";
 
 export function NavBar() {
@@ -82,33 +80,35 @@ export function NavBar() {
                       return <FakeListItem key={i} />;
                     })
                   ) : shows.data ? (
-                    shows.data?.filter(s => s.isPublic).map((show: Show) => {
-                      return (
-                        <Link
-                          href={`/photos/shows/${show.slug}`}
-                          key={show.id}
-                          passHref
-                          legacyBehavior
-                        >
-                          <ListItem title={show.name}>
-                            {show.children && (
-                              <div className="flex flex-row items-center gap-2">
-                                {show.children.map((child: Show) => (
-                                  <div key={child.id}>
-                                    <Link
-                                      href={`/photos/shows/${show.slug}/${child.slug}`}
-                                      className="text-black underline"
-                                    >
-                                      {child.name}
-                                    </Link>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </ListItem>
-                        </Link>
-                      );
-                    })
+                    shows.data
+                      ?.filter((s) => s.isPublic)
+                      .map((show: Show) => {
+                        return (
+                          <Link
+                            href={`/photos/shows/${show.slug}`}
+                            key={show.id}
+                            passHref
+                            legacyBehavior
+                          >
+                            <ListItem title={show.name}>
+                              {show.children && (
+                                <div className="flex flex-row items-center gap-2">
+                                  {show.children.map((child: Show) => (
+                                    <div key={child.id}>
+                                      <Link
+                                        href={`/photos/shows/${show.slug}/${child.slug}`}
+                                        className="text-black underline"
+                                      >
+                                        {child.name}
+                                      </Link>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </ListItem>
+                          </Link>
+                        );
+                      })
                   ) : (
                     <div>No Recent Shows</div>
                   )}
@@ -251,35 +251,6 @@ const FakeListItem = () => {
         >
           <Skeleton className="h-5 w-10" />
           <Skeleton className="w-15 h-5" />
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-};
-
-const AccountListItem = ({
-  className,
-  title,
-  onClick,
-  href,
-  ...props
-}: {
-  className?: string;
-  title: string;
-  onClick?: () => void;
-  href?: string;
-}) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild href={href} onClick={onClick}>
-        <a
-          className={cn(
-            "block min-w-[75px] select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
         </a>
       </NavigationMenuLink>
     </li>

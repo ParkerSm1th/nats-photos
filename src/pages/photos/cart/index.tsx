@@ -1,10 +1,8 @@
 import CheckoutButton from "@/components/global/CheckoutButton";
-import { Button } from "@/components/ui/ui/button";
 import { Separator } from "@/components/ui/ui/separator";
 import { useCart } from "@/providers/CartProvider";
 import { trackEvent } from "@/utils/tracking";
 import { useAuth } from "@clerk/nextjs";
-import Image from "next/image";
 
 export default function Cart() {
   const { cart, removeFromCart } = useCart();

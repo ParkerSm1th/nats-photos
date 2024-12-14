@@ -1,5 +1,4 @@
 import AWS from "aws-sdk";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
@@ -39,6 +38,7 @@ export class S3Service {
       ContentType: info.type,
     });
     // Weird vercel bug, it appends this odd trace
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const splitLink = link.split("&X-Amzn-Trace-Id");
     return link;
   }
@@ -50,7 +50,7 @@ export class S3Service {
             process.env.NODE_ENV === "development" ? "photos-dev" : "photos",
           Key: key,
         },
-        (err, data) => {
+        (err) => {
           if (err) {
             reject(err);
           } else {

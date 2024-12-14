@@ -3,12 +3,10 @@ import { UploadPhotoDialog } from "@/components/admin/shows/UploadPhoto";
 import { BarGraph } from "@/components/global/BarGraph";
 import { SpinnerPage } from "@/components/global/Spinner";
 import { PhotoGallery } from "@/components/shows/PhotoGallery";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/ui/avatar";
 import { Button } from "@/components/ui/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/ui/card";
@@ -60,6 +58,7 @@ export default function Show() {
     }
   }, [showName]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: stats, isLoading: isStatsLoading } =
     api.shows.getDashboardStats.useQuery(
       {

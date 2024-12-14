@@ -7,8 +7,7 @@ import React, {
   useState,
 } from "react";
 
-import { LocalStorageKey } from "../common/constants";
-import { UploadQueueItem } from "@/common/types";
+import type { UploadQueueItem } from "@/common/types";
 import { api } from "@/utils/api";
 import imageCompression from "browser-image-compression";
 import { AnimatePresence, motion } from "framer-motion";
@@ -91,7 +90,7 @@ export const UploadsProvider: FC<Props> = ({ children }) => {
           useWebWorker: true,
         };
         const compressedFile = await imageCompression(newFile.file, options);
-        const newPhotoLink = await addPhoto.mutateAsync({
+        await addPhoto.mutateAsync({
           showId: newFile.showId,
           photoId: newFile.id,
           base64: await compressedFile

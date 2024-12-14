@@ -12,6 +12,7 @@ export default async function handler(
     return res.status(401).json({ error: "Unauthorized" });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const user = userId ? await clerkClient.users.getUser(userId) : null;
 
   // use the user object to decide what data to return
