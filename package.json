@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.3.3",
+    "@awesome.me/kit-ce838ee563": "^1.0.15",
     "@aws-sdk/client-s3": "^3.441.0",
     "@clerk/nextjs": "^4.26.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
