@@ -127,10 +127,6 @@ export const PhotoGallery = ({
               onLoad={() => {
                 setImagesLoaded((prev) => [...prev, photo.id]);
               }}
-              style={{
-                maxHeight: "calc(100vh - 80px)",
-                width: "auto",
-              }}
             />
             {!imagesLoaded.includes(photo.id) ? (
               <div className="absolute left-0 top-0 flex min-h-full min-w-full items-center justify-center rounded-lg bg-gray-200 text-gray-600">
