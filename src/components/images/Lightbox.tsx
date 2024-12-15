@@ -62,7 +62,7 @@ function Lightbox({
           &#8203;
         </span>
         <div
-          className="m-8 inline-block w-full max-w-screen-md transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:align-middle"
+          className="m-8 inline-block w-auto max-w-screen-md transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:align-middle"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-headline"
@@ -169,6 +169,10 @@ function Lightbox({
               className="h-full w-full"
               placeholder="blur"
               loading="lazy"
+              style={{
+                maxHeight: "calc(100vh - 80px)",
+                width: "auto",
+              }}
             />
           </div>
         </div>
