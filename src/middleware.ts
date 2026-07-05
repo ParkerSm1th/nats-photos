@@ -2,6 +2,7 @@ import { clerkClient } from "@clerk/nextjs";
 import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getClerkMiddlewareOptions } from "./lib/clerk-config";
 import { HOSTNAME, isAdmin as isUserAdmin } from "./lib/utils";
 
 const publicPaths = [
@@ -52,7 +53,7 @@ export default withClerkMiddleware(async (request: NextRequest) => {
     }
   }
   return NextResponse.next();
-});
+}, getClerkMiddlewareOptions());
 
 // Stop Middleware running on static files
 export const config = {
