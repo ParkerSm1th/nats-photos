@@ -75,6 +75,30 @@ export const showRouter = createTRPCRouter({
       });
       return shows.map((s) => fromPrisma(s));
     }),
+  getRecentPublic: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(5),
+      })
+    )
+    .query(async ({ ctx, input }): Promise<Show[]> => {
+      const rawShows = await ctx.prisma.show.findMany({
+        where: { isPublic: true, parentId: null },
+        orderBy: { createdAt: "desc" },
+        take: input.limit,
+      });
+      const childShows = await ctx.prisma.show.findMany({
+        where: { parentId: { in: rawShows.map((s) => s.id) } },
+        orderBy: { startDate: "asc" },
+      });
+      const showsWithChildren = rawShows.map((show) => ({
+        ...show,
+        children: childShows
+          .filter((s) => s.parentId === show.id)
+          .map((s) => fromPrisma(s, false)),
+      }));
+      return showsWithChildren.map((s) => fromPrisma(s));
+    }),
   getAll: publicProcedure
     .input(
       z.object({
