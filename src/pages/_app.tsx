@@ -1,5 +1,6 @@
 import { DashboardLayout } from "@/components/global/Layout";
 import { Toaster } from "@/components/ui/ui/toaster";
+import { getClerkProviderProps } from "@/lib/clerk-config";
 import { api } from "@/utils/api";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
@@ -59,7 +60,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
           rel="stylesheet"
         ></link>
       </Head>
-      <ClerkProvider>
+      <ClerkProvider {...getClerkProviderProps()}>
         <UploadsProvider>
           <Analytics />
           <CartProvider>{getLayout(<Component {...pageProps} />)}</CartProvider>

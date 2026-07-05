@@ -1,3 +1,4 @@
+import { getAppUrl } from "@/lib/app-url";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -10,7 +11,5 @@ export function isAdmin(user: UserPublicMetadata) {
 }
 
 export function HOSTNAME() {
-  return process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://natalielockhartphotos.com";
+  return getAppUrl();
 }

@@ -15,6 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn, isAdmin } from "@/lib/utils";
+import { getClerkAccountsUrl } from "@/lib/clerk-config";
 import { api } from "@/utils/api";
 import {
   ClerkLoading,
@@ -180,11 +181,7 @@ export function NavBar() {
                       <MenubarItem>Purchases</MenubarItem>
                     </Link>
                     <Link
-                      href={
-                        process.env.NODE_ENV == "development"
-                          ? "https://big-sloth-75.accounts.dev/user"
-                          : "https://accounts.natalielockhartphotos.com/user"
-                      }
+                      href={getClerkAccountsUrl()}
                     >
                       <MenubarItem>Security</MenubarItem>
                     </Link>
