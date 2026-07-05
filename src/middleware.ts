@@ -40,7 +40,7 @@ const isAdmin = (path: string) => {
   );
 };
 
-export default withClerkMiddleware(async (request: NextRequest) => {
+export default withClerkMiddleware((request: NextRequest) => {
   const { userId } = getAuth(request);
 
   if (isPublic(request.nextUrl.pathname)) {
