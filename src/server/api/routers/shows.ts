@@ -160,7 +160,7 @@ export const showRouter = createTRPCRouter({
       });
       const cachedUrls =
         (await cacheGetJSON("showPhotosLinks", input.id)) ?? {};
-      const urlsToAdd = { ...cachedUrls };
+      let urlsToAdd: typeof cachedUrls | null = null;
       let cacheDirty = false;
       const returnedPhotos = photos.map((photo) => {
         const cachedUrl = cachedUrls[photo.id];
@@ -173,6 +173,9 @@ export const showRouter = createTRPCRouter({
             photo.id + "-watermark.jpg",
             604800
           );
+          if (!urlsToAdd) {
+            urlsToAdd = { ...cachedUrls };
+          }
           urlsToAdd[photo.id] = {
             url,
             expiresAt: Date.now() + 604700000,
@@ -184,7 +187,7 @@ export const showRouter = createTRPCRouter({
           url,
         };
       });
-      if (cacheDirty) {
+      if (cacheDirty && urlsToAdd) {
         void cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
       }
       return returnedPhotos;

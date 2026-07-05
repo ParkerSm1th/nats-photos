@@ -1,5 +1,26 @@
 import { kv } from "@vercel/kv";
 
+const KV_TIMEOUT_MS = 3_000;
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  fallback: T
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timeoutId = setTimeout(() => resolve(fallback), KV_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 interface CacheStorage {
   showPhotosLinks: Record<
     string,
@@ -24,8 +45,13 @@ export async function cacheSetJSON<K extends keyof CacheStorage>(
   ttl: number
 ): Promise<void> {
   try {
-    await kv.set(cacheKey(prefix, key), value, { ex: ttl });
-    console.log("cacheSetJSON: Successful set for prefix:", prefix);
+    const didSet = await withTimeout(
+      kv.set(cacheKey(prefix, key), value, { ex: ttl }).then(() => true),
+      false
+    );
+    if (didSet) {
+      console.log("cacheSetJSON: Successful set for prefix:", prefix);
+    }
   } catch (error) {
     if (process.env.NODE_ENV === "test") {
       return;
@@ -39,7 +65,10 @@ export async function cacheGetJSON<K extends keyof CacheStorage>(
   key: CacheStorageKeyTypes[K]
 ): Promise<CacheStorage[K] | null> {
   try {
-    const value = await kv.get<CacheStorage[K]>(cacheKey(prefix, key));
+    const value = await withTimeout(
+      kv.get<CacheStorage[K]>(cacheKey(prefix, key)),
+      null
+    );
     if (value) {
       console.log("cacheGetJSON: Successful read for prefix:", prefix);
     }
