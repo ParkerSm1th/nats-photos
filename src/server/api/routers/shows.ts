@@ -1,7 +1,6 @@
 import { clerkClient } from "@clerk/nextjs";
 import type { User } from "@clerk/nextjs/dist/types/server";
 import type { Show as PrismaShow, Show } from "@prisma/client";
-import fastDeepEqual from "fast-deep-equal/es6";
 import Jimp from "jimp";
 import JPEG from "jpeg-js";
 import { z } from "zod";
@@ -11,10 +10,8 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import {
   cacheGetJSON,
   cacheSetJSON,
-  getRedisStatus,
   invalidateCache,
-  reconnectRedis,
-} from "../utils/redis";
+} from "../utils/cache";
 
 const s3Service = new S3Service("natalies-photos");
 
@@ -74,6 +71,30 @@ export const showRouter = createTRPCRouter({
         orderBy: { startDate: "desc" },
       });
       return shows.map((s) => fromPrisma(s));
+    }),
+  getRecentPublic: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(5),
+      })
+    )
+    .query(async ({ ctx, input }): Promise<Show[]> => {
+      const rawShows = await ctx.prisma.show.findMany({
+        where: { isPublic: true, parentId: null },
+        orderBy: { createdAt: "desc" },
+        take: input.limit,
+      });
+      const childShows = await ctx.prisma.show.findMany({
+        where: { parentId: { in: rawShows.map((s) => s.id) } },
+        orderBy: { startDate: "asc" },
+      });
+      const showsWithChildren = rawShows.map((show) => ({
+        ...show,
+        children: childShows
+          .filter((s) => s.parentId === show.id)
+          .map((s) => fromPrisma(s, false)),
+      }));
+      return showsWithChildren.map((s) => fromPrisma(s));
     }),
   getAll: publicProcedure
     .input(
@@ -161,43 +182,38 @@ export const showRouter = createTRPCRouter({
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
       });
-      // TODO: Make this a helper function
-      if (!getRedisStatus()?.isOpen) {
-        reconnectRedis();
-      }
       const cachedUrls =
         (await cacheGetJSON("showPhotosLinks", input.id)) ?? {};
-      let urlsToAdd = {
-        ...cachedUrls,
-      };
-      const returnedPhotos = await Promise.all(
-        photos.map((photo) => {
-          const cachedUrl = cachedUrls[photo.id];
-          let url = cachedUrl?.url;
-          if (
-            !url ||
-            (cachedUrl?.expiresAt && cachedUrl?.expiresAt < Date.now())
-          ) {
-            url = s3Service.getPresignedLink(
-              photo.id + "-watermark.jpg",
-              604800
-            );
-            urlsToAdd = {
-              ...urlsToAdd,
-              [photo.id]: {
-                url,
-                expiresAt: Date.now() + 604700000,
-              },
-            };
+      let urlsToAdd: typeof cachedUrls | null = null;
+      let cacheDirty = false;
+      const returnedPhotos = photos.map((photo) => {
+        const cachedUrl = cachedUrls[photo.id];
+        let url = cachedUrl?.url;
+        if (
+          !url ||
+          (cachedUrl?.expiresAt && cachedUrl.expiresAt < Date.now())
+        ) {
+          url = s3Service.getPresignedLink(
+            photo.id + "-watermark.jpg",
+            604800
+          );
+          if (!urlsToAdd) {
+            urlsToAdd = { ...cachedUrls };
           }
-          return {
-            ...photo,
+          urlsToAdd[photo.id] = {
             url,
+            expiresAt: Date.now() + 604700000,
           };
-        })
-      );
-      if (!fastDeepEqual(urlsToAdd, cachedUrls))
-        await cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
+          cacheDirty = true;
+        }
+        return {
+          ...photo,
+          url,
+        };
+      });
+      if (cacheDirty && urlsToAdd) {
+        void cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
+      }
       return returnedPhotos;
     }),
   invalidateShowPhotosLinksCache: adminProcedure
