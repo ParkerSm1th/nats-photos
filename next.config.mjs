@@ -9,7 +9,9 @@ const config = {
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? "",
-    NEXT_PUBLIC_CLERK_DOMAIN: process.env.VERCEL_URL ?? "",
+    ...(process.env.VERCEL_ENV === "preview"
+      ? { NEXT_PUBLIC_CLERK_PREVIEW_DOMAIN: process.env.VERCEL_URL ?? "" }
+      : {}),
   },
 
   /**
