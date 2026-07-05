@@ -71,7 +71,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
         <Analytics />
         <CartProvider>
           <AppProviders>{getLayout(<Component {...pageProps} />)}</AppProviders>
-        </CartProvider
+        </CartProvider>
       </ClerkProvider>
       <Toaster />
     </div>
