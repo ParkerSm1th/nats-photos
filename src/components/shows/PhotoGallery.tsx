@@ -93,8 +93,9 @@ export const PhotoGallery = ({
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
       refetchOnMount: false,
-      refetchOnReconnect: false,
+      refetchOnReconnect: true,
       refetchOnWindowFocus: false,
+      retry: 2,
     }
   );
 
@@ -103,11 +104,14 @@ export const PhotoGallery = ({
   const utils = api.useContext();
 
   const deletePhotoMutation = api.shows.deletePhoto.useMutation();
+  const invalidateShowPhotosLinksCache =
+    api.shows.invalidateShowPhotosLinksCache.useMutation();
 
   const deletePhoto = async (photoId: string): Promise<void> => {
     await deletePhotoMutation.mutateAsync({
       photoId: photoId,
     });
+    await invalidateShowPhotosLinksCache.mutateAsync({ id });
     utils.shows.getShowPhotos.setInfiniteData({ id }, (old) => {
       if (!old) return old;
       return {

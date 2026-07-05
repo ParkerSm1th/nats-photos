@@ -15,6 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn, isAdmin } from "@/lib/utils";
+import { getClerkAccountsUrl } from "@/lib/clerk-config";
 import { api } from "@/utils/api";
 import {
   ClerkLoading,
@@ -41,11 +42,8 @@ import { useCart } from "@/providers/CartProvider";
 import { CartIcon } from "./CartIcon";
 
 export function NavBar() {
-  const shows = api.shows.getAll.useQuery(
-    {
-      limit: 10,
-      orderByStartDate: "desc",
-    },
+  const shows = api.shows.getRecentPublic.useQuery(
+    { limit: 5 },
     {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
@@ -76,13 +74,11 @@ export function NavBar() {
                 <ul className="grid gap-3 p-6 pt-1 md:w-[400px] lg:w-[500px] lg:grid-cols-[1fr_1fr]">
                   {shows.isLoading ? (
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    [...Array(4)].map((_, i) => {
+                    [...Array(5)].map((_, i) => {
                       return <FakeListItem key={i} />;
                     })
                   ) : shows.data ? (
-                    shows.data
-                      ?.filter((s) => s.isPublic)
-                      .map((show: Show) => {
+                    shows.data.map((show: Show) => {
                         return (
                           <Link
                             href={`/photos/shows/${show.slug}`}
@@ -180,11 +176,7 @@ export function NavBar() {
                       <MenubarItem>Purchases</MenubarItem>
                     </Link>
                     <Link
-                      href={
-                        process.env.NODE_ENV == "development"
-                          ? "https://big-sloth-75.accounts.dev/user"
-                          : "https://accounts.natalielockhartphotos.com/user"
-                      }
+                      href={getClerkAccountsUrl()}
                     >
                       <MenubarItem>Security</MenubarItem>
                     </Link>

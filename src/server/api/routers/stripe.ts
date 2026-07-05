@@ -1,10 +1,10 @@
 import { PRICE_PER_PHOTO } from "@/common/constants";
+import { getAppUrl } from "@/lib/app-url";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { Stripe } from "stripe";
 import { z } from "zod";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const origin = process.env.NEXT_PUBLIC_ORIGIN!;
 
 function splitPhotosIntoMetadata(photoIds: string[], maxCharsPerKey = 500) {
   // @ts-expect-error -- unknown
@@ -36,7 +36,7 @@ export const stripeRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-
+      const origin = getAppUrl();
       // With stripe each metadata key can only be 500 characters long,
       // so we need to store the photo objects in a separate object
       // and store the keys in the metadata and how to reconstruct the
