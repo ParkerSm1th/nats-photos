@@ -21,6 +21,12 @@ async function withTimeout<T>(
   }
 }
 
+type ShowScheduleItem = {
+  name: string;
+  date: string;
+  location: string;
+};
+
 interface CacheStorage {
   showPhotosLinks: Record<
     string,
@@ -29,9 +35,11 @@ interface CacheStorage {
       expiresAt: number;
     }
   >;
+  showSchedule: ShowScheduleItem[];
 }
 interface CacheStorageKeyTypes extends Record<keyof CacheStorage, unknown> {
   showPhotosLinks: string;
+  showSchedule: "global";
 }
 
 function cacheKey(prefix: keyof CacheStorage, key: CacheStorageKeyTypes[typeof prefix]) {

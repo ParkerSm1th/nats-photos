@@ -18,16 +18,8 @@ export default function Show() {
       enabled: !!furthestRightSlug,
     }
   );
-  const showName = api.shows.getShowNameBySlug.useQuery(
-    {
-      slug: furthestRightSlug!,
-    },
-    {
-      enabled: !!furthestRightSlug,
-    }
-  );
 
-  return showName.isLoading ? (
+  return show.isLoading ? (
     <Spinner />
   ) : (
     <>
@@ -36,7 +28,7 @@ export default function Show() {
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-8 ">
           <div className="flex flex-col items-center justify-center gap-1 text-center">
             <h1 className="text-5xl font-extrabold tracking-tight text-black">
-              {showName.data}
+              {show.data?.name}
             </h1>
             <p className="text-lg text-muted-foreground">
               You can click on a photo to preview it and add it to your cart.

@@ -91,7 +91,7 @@ html {
 }
 
 .home {
-  font-family: 'Raleway', sans-serif;
+  font-family: inherit;
 }
 
 .hero-bg {

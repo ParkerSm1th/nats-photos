@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import Lightbox from "../images/Lightbox";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useCart } from "@/providers/CartProvider";
 import { api } from "@/utils/api";
 import type { Photo } from "@prisma/client";
@@ -9,9 +9,59 @@ import { useAuth } from "@clerk/nextjs";
 import { trackEvent } from "@/utils/tracking";
 import { Checkbox } from "../ui/ui/checkbox";
 
+const Lightbox = dynamic(() => import("../images/Lightbox"), { ssr: false });
+
 type PhotoResponse = Photo & {
   url: string;
 };
+
+const GalleryItem = memo(function GalleryItem({
+  photo,
+  bulkMode,
+  bulkSelections,
+  onToggleChecked,
+  onSelect,
+}: {
+  photo: PhotoResponse;
+  bulkMode?: boolean;
+  bulkSelections?: string[];
+  onToggleChecked: (photoId: string) => void;
+  onSelect: (photo: PhotoResponse) => void;
+}) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div
+      className="relative min-h-[150px] min-w-full cursor-pointer"
+      onClick={() =>
+        bulkMode ? onToggleChecked(photo.id) : onSelect(photo)
+      }
+    >
+      {bulkMode && (
+        <Checkbox
+          className="absolute left-3 top-3 h-6 w-6 border-purple-300 text-white shadow-md data-[state=checked]:bg-purple-300"
+          checked={bulkSelections?.includes(photo.id)}
+          onClick={() => {
+            onToggleChecked(photo.id);
+          }}
+        />
+      )}
+      {/*eslint-disable-next-line @next/next/no-img-element*/}
+      <img
+        src={photo.url}
+        className="rounded-lg"
+        alt={photo.id}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+      />
+      {!loaded && (
+        <div className="absolute left-0 top-0 flex min-h-full min-w-full items-center justify-center rounded-lg bg-gray-200 text-gray-600">
+          <Spinner />
+        </div>
+      )}
+    </div>
+  );
+});
 
 export const PhotoGallery = ({
   id,
@@ -30,17 +80,26 @@ export const PhotoGallery = ({
 }) => {
   const { addToCart } = useCart();
   const { userId } = useAuth();
-  const { isLoading, data } = api.shows.getShowPhotos.useQuery(
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const {
+    isLoading,
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = api.shows.getShowPhotos.useInfiniteQuery(
+    { id, limit: 40 },
     {
-      id,
-    },
-    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
       refetchOnMount: false,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
       retry: 2,
     }
   );
+
+  const photos = data?.pages.flatMap((page) => page.photos) ?? [];
 
   const utils = api.useContext();
 
@@ -53,14 +112,16 @@ export const PhotoGallery = ({
       photoId: photoId,
     });
     await invalidateShowPhotosLinksCache.mutateAsync({ id });
-    // Optimistically remove from UI
-    const newData = data?.filter((item) => item.id !== photoId) ?? [];
-    utils.shows.getShowPhotos.setData(
-      {
-        id,
-      },
-      newData
-    );
+    utils.shows.getShowPhotos.setInfiniteData({ id }, (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page) => ({
+          ...page,
+          photos: page.photos.filter((item) => item.id !== photoId),
+        })),
+      };
+    });
   };
 
   const [selectedImage, setSelectedImage] = useState<PhotoResponse | null>(
@@ -80,67 +141,63 @@ export const PhotoGallery = ({
     );
   }, [id, selectedImage, showName, userId]);
 
-  const toggleChecked = (photoId: string) => {
-    const currentBulkSelections = bulkSelections ?? [];
-    if (bulkSelections?.includes(photoId)) {
-      setBulkSelections?.(
-        currentBulkSelections.filter((item) => item !== photoId)
-      );
-    } else {
-      setBulkSelections?.([...currentBulkSelections, photoId]);
-    }
-  };
+  const toggleChecked = useCallback(
+    (photoId: string) => {
+      const currentBulkSelections = bulkSelections ?? [];
+      if (bulkSelections?.includes(photoId)) {
+        setBulkSelections?.(
+          currentBulkSelections.filter((item) => item !== photoId)
+        );
+      } else {
+        setBulkSelections?.([...currentBulkSelections, photoId]);
+      }
+    },
+    [bulkSelections, setBulkSelections]
+  );
 
-  const selectedImageIndex = !data
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const selectedImageIndex = !photos.length
     ? -1
-    : data.findIndex((item) => item.id === selectedImage?.id);
+    : photos.findIndex((item) => item.id === selectedImage?.id);
   const shouldShowNext =
     selectedImageIndex !== -1 &&
-    selectedImageIndex < (data ? data.length - 1 : 0);
+    selectedImageIndex < (photos.length ? photos.length - 1 : 0);
   const shouldShowPrev = selectedImageIndex !== -1 && selectedImageIndex > 0;
-  const [imagesLoaded, setImagesLoaded] = useState<string[]>([]);
+
   return isLoading || !data ? (
     <SpinnerPage />
   ) : (
     <>
       <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {data.map((photo) => (
-          <div
+        {photos.map((photo) => (
+          <GalleryItem
             key={photo.id}
-            className="relative min-h-[150px] min-w-full cursor-pointer"
-            onClick={() =>
-              bulkMode ? toggleChecked(photo.id) : setSelectedImage(photo)
-            }
-          >
-            {bulkMode && (
-              <Checkbox
-                className="absolute left-3 top-3 h-6 w-6 border-purple-300 text-white shadow-md data-[state=checked]:bg-purple-300"
-                checked={bulkSelections?.includes(photo.id)}
-                onClick={() => {
-                  toggleChecked(photo.id);
-                }}
-              />
-            )}
-            {/*eslint-disable-next-line @next/next/no-img-element*/}
-            <img
-              src={photo.url}
-              className="rounded-lg"
-              alt={photo.id}
-              placeholder="blur"
-              loading="lazy"
-              onLoad={() => {
-                setImagesLoaded((prev) => [...prev, photo.id]);
-              }}
-            />
-            {!imagesLoaded.includes(photo.id) ? (
-              <div className="absolute left-0 top-0 flex min-h-full min-w-full items-center justify-center rounded-lg bg-gray-200 text-gray-600">
-                <Spinner />
-              </div>
-            ) : (
-              <></>
-            )}
-          </div>
+            photo={photo}
+            bulkMode={bulkMode}
+            bulkSelections={bulkSelections}
+            onToggleChecked={toggleChecked}
+            onSelect={setSelectedImage}
+          />
         ))}
+      </div>
+      <div ref={loadMoreRef} className="flex w-full justify-center py-4">
+        {isFetchingNextPage && <Spinner />}
       </div>
       {selectedImage && (
         <Lightbox
@@ -173,12 +230,12 @@ export const PhotoGallery = ({
           photoId={selectedImage.id}
           onNext={
             shouldShowNext
-              ? () => setSelectedImage(data[selectedImageIndex + 1] ?? null)
+              ? () => setSelectedImage(photos[selectedImageIndex + 1] ?? null)
               : undefined
           }
           onPrev={
             shouldShowPrev
-              ? () => setSelectedImage(data[selectedImageIndex - 1] ?? null)
+              ? () => setSelectedImage(photos[selectedImageIndex - 1] ?? null)
               : undefined
           }
         />

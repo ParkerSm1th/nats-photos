@@ -65,19 +65,14 @@ export default async function handler(
         if (!photos) return res.send(200);
         const photosParsed = photos;
         console.log("💰 Payment received!", completedEvent);
-        for (const photo of photosParsed) {
-          try {
-            await prisma.purchases.create({
-              data: {
-                userId,
-                photoId: photo,
-                stripeCheckoutId: completedEvent.id,
-              },
-            });
-          } catch (e) {
-            console.log("Error creating purchase", e);
-          }
-        }
+        await prisma.purchases.createMany({
+          data: photosParsed.map((photo) => ({
+            userId,
+            photoId: photo,
+            stripeCheckoutId: completedEvent.id,
+          })),
+          skipDuplicates: true,
+        });
         break;
       default:
         console.log(`Unhandled event type ${event.type}`);
