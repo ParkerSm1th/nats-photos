@@ -2,11 +2,9 @@ import { clerkClient } from "@clerk/nextjs";
 import type { User } from "@clerk/nextjs/dist/types/server";
 import type { Show as PrismaShow, Show } from "@prisma/client";
 import fastDeepEqual from "fast-deep-equal/es6";
-import Jimp from "jimp";
-import JPEG from "jpeg-js";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { S3Service } from "../services/S3Service/S3Service";
-import { WatermarkService } from "../services/WatermarkService/WatermarkService";
 import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import {
   cacheGetJSON,
@@ -206,26 +204,6 @@ export const showRouter = createTRPCRouter({
       await invalidateCache("showPhotosLinks", input.id);
       return true;
     }),
-  getPresignedUploadLink: adminProcedure
-    .input(
-      z.object({
-        photoKey: z.string(),
-        type: z.string(),
-      })
-    )
-    .mutation(({ input }) => {
-      const s3Service = new S3Service("natalies-photos");
-      const preSign = s3Service.getPresignedUploadLink(
-        {
-          key: input.photoKey,
-          type: input.type,
-        },
-        60
-      );
-      return {
-        url: preSign,
-      };
-    }),
   getDashboardStats: adminProcedure
     .input(
       z.object({
@@ -369,34 +347,12 @@ export const showRouter = createTRPCRouter({
         base64: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      Jimp.decoders["image/jpeg"] = (data) =>
-        JPEG.decode(data, { maxMemoryUsageInMB: 60000 });
-      const image = await Jimp.read(Buffer.from(input.base64, "base64"));
-      const watermarkService = new WatermarkService(
-        await Jimp.read(
-          "https://res.cloudinary.com/dqdjvho5d/image/upload/v1699069051/WhiteSmallLogo_kppgao.png"
-        )
-      );
-      const waterMarked = watermarkService.getWatermarkedImage(image);
-      const previewUploadUrl = s3Service.getPresignedUploadLink(
-        {
-          key: input.photoId + "-watermark.jpg",
-          type: "image/jpeg",
-        },
-        60
-      );
-      await fetch(previewUploadUrl, {
-        method: "PUT",
-        headers: new Headers({ "Content-Type": "image/jpeg" }),
-        body: await waterMarked.getBufferAsync(Jimp.MIME_JPEG),
+    .mutation(async () => {
+      throw new TRPCError({
+        code: "GONE",
+        message:
+          "addPhoto is deprecated. Use the /api/uploads workflow pipeline instead.",
       });
-      const photo = await ctx.prisma.photo.upsert({
-        where: { id: input.photoId },
-        update: {},
-        create: { id: input.photoId, showId: input.showId },
-      });
-      return photo;
     }),
   deletePhoto: adminProcedure
     .input(z.object({ photoId: z.string().uuid() }))

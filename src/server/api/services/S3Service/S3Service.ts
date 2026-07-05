@@ -37,10 +37,52 @@ export class S3Service {
       Expires: expiryInSeconds,
       ContentType: info.type,
     });
-    // Weird vercel bug, it appends this odd trace
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const splitLink = link.split("&X-Amzn-Trace-Id");
-    return link;
+    return splitLink[0] ?? link;
+  }
+  async headObject(key: string): Promise<{ contentLength: number } | null> {
+    return new Promise((resolve, reject) => {
+      s3.headObject(
+        {
+          Bucket:
+            process.env.NODE_ENV === "development" ? "photos-dev" : "photos",
+          Key: key,
+        },
+        (err, data) => {
+          if (err) {
+            if (err.code === "NotFound" || err.statusCode === 404) {
+              resolve(null);
+              return;
+            }
+            reject(err);
+            return;
+          }
+          resolve({ contentLength: data.ContentLength ?? 0 });
+        }
+      );
+    });
+  }
+  async getObjectBuffer(key: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      s3.getObject(
+        {
+          Bucket:
+            process.env.NODE_ENV === "development" ? "photos-dev" : "photos",
+          Key: key,
+        },
+        (err, data) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          if (!data.Body) {
+            reject(new Error(`Empty body for S3 key: ${key}`));
+            return;
+          }
+          resolve(Buffer.from(data.Body as Buffer));
+        }
+      );
+    });
   }
   async deleteObject(key: string): Promise<void> {
     return new Promise((resolve, reject) => {

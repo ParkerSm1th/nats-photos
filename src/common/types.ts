@@ -23,8 +23,19 @@ export type SessionUser = {
   image?: string | null;
 };
 
+export type UploadQueueItemStatus =
+  | "queued"
+  | "uploading"
+  | "processing"
+  | "complete"
+  | "failed";
+
 export type UploadQueueItem = {
   id: string;
   showId: string;
   file: File;
+  status: UploadQueueItemStatus;
+  progress: number;
+  errorMessage?: string;
+  batchId?: string;
 };

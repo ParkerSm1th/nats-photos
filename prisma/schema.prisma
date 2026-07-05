@@ -14,6 +14,46 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+enum PhotoUploadStatus {
+    QUEUED
+    UPLOADING_ORIGINAL
+    PROCESSING
+    COMPLETE
+    FAILED
+}
+
+model PhotoUploadBatch {
+    id        String        @id @default(uuid())
+    showId    String
+    show      Show          @relation(fields: [showId], references: [id], onDelete: Cascade)
+    createdBy String
+    createdAt DateTime      @default(now())
+    uploads   PhotoUpload[]
+
+    @@index([showId])
+}
+
+model PhotoUpload {
+    id            String            @id @default(uuid())
+    batchId       String
+    batch         PhotoUploadBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+    showId        String
+    show          Show              @relation(fields: [showId], references: [id], onDelete: Cascade)
+    fileName      String
+    status        PhotoUploadStatus @default(QUEUED)
+    progress      Int               @default(0)
+    errorMessage  String?
+    workflowRunId String?
+    createdAt     DateTime          @default(now())
+    updatedAt     DateTime          @updatedAt
+    photo         Photo?            @relation(fields: [photoId], references: [id])
+    photoId       String?           @unique
+
+    @@index([batchId])
+    @@index([showId])
+    @@index([status])
+}
+
 model Show {
     id        String    @id @default(uuid())
     name      String    @db.Text
@@ -27,18 +67,21 @@ model Show {
     parentId  String?
     children  Show[]    @relation("ParentShow")
     Photo     Photo[]
+    PhotoUploadBatch PhotoUploadBatch[]
+    PhotoUpload      PhotoUpload[]
     isPublic  Boolean   @default(true)
 
     @@index([parentId])
 }
 
 model Photo {
-    id        String      @id @default(uuid())
-    showId    String
-    show      Show        @relation(fields: [showId], references: [id], onDelete: Cascade)
-    createdAt DateTime    @default(now())
-    updatedAt DateTime    @default(now()) @updatedAt
-    Purchases Purchases[]
+    id          String       @id @default(uuid())
+    showId      String
+    show        Show         @relation(fields: [showId], references: [id], onDelete: Cascade)
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @default(now()) @updatedAt
+    Purchases   Purchases[]
+    PhotoUpload PhotoUpload?
 
     @@index([showId])
 }

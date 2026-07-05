@@ -62,8 +62,9 @@ export const config = {
      * - _next
      * - static (static files)
      * - favicon.ico (favicon file)
+     * - .well-known/workflow (Vercel Workflow internal paths)
      */
-    "/(.*?trpc.*?|(?!static|.*\\..*|_next|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.well-known/workflow/|.*\\..*).*)",
     "/",
   ],
 };
