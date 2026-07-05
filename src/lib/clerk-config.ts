@@ -3,7 +3,6 @@ import { PRODUCTION_SITE_URL, isPreviewDeployment } from "@/lib/app-url";
 const DEV_CLERK_ACCOUNTS_URL = "https://big-sloth-75.accounts.dev/user";
 const PROD_CLERK_ACCOUNTS_URL =
   "https://accounts.natalielockhartphotos.com/user";
-const PRODUCTION_CLERK_DOMAIN = "natalielockhartphotos.com";
 
 const VERCEL_PREVIEW_ORIGIN = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
 
@@ -20,41 +19,59 @@ export function getClerkAccountsUrl() {
     : DEV_CLERK_ACCOUNTS_URL;
 }
 
-function getSatelliteClerkProps(domain: string) {
+function getPreviewSatelliteDomain() {
+  return process.env.NEXT_PUBLIC_CLERK_PREVIEW_DOMAIN ?? process.env.VERCEL_URL;
+}
+
+function getPreviewSatelliteProps() {
+  const previewDomain = getPreviewSatelliteDomain();
+
+  if (!previewDomain) {
+    return null;
+  }
+
   return {
     isSatellite: true as const,
-    domain,
+    domain: previewDomain,
     signInUrl: `${PRODUCTION_SITE_URL}/sign-in`,
     signUpUrl: `${PRODUCTION_SITE_URL}/sign-up`,
   };
 }
 
-export function getClerkProviderProps() {
-  const allowedRedirectOrigins: (string | RegExp)[] = [
+function getAllowedRedirectOrigins() {
+  return [
     "http://localhost:3000",
     PRODUCTION_SITE_URL,
     "https://www.natalielockhartphotos.com",
     VERCEL_PREVIEW_ORIGIN,
   ];
+}
 
-  if (usesProductionClerkKeys()) {
-    if (isPreviewDeployment()) {
-      const previewDomain =
-        process.env.NEXT_PUBLIC_CLERK_PREVIEW_DOMAIN ?? process.env.VERCEL_URL;
+export function shouldUsePreviewSatelliteMode() {
+  return (
+    usesProductionClerkKeys() &&
+    isPreviewDeployment() &&
+    Boolean(getPreviewSatelliteDomain())
+  );
+}
 
-      if (previewDomain) {
-        return {
-          ...getSatelliteClerkProps(previewDomain),
-          allowedRedirectOrigins,
-        };
-      }
-    }
+export function getClerkMiddlewareOptions() {
+  if (!shouldUsePreviewSatelliteMode()) {
+    return {};
+  }
 
+  return getPreviewSatelliteProps() ?? {};
+}
+
+export function getClerkProviderProps() {
+  const allowedRedirectOrigins = getAllowedRedirectOrigins();
+
+  if (shouldUsePreviewSatelliteMode()) {
     return {
-      ...getSatelliteClerkProps(PRODUCTION_CLERK_DOMAIN),
+      ...getPreviewSatelliteProps(),
       allowedRedirectOrigins,
     };
   }
 
-  return { isSatellite: false as const, allowedRedirectOrigins };
+  return { allowedRedirectOrigins };
 }
