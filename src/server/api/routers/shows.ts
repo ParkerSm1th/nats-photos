@@ -1,7 +1,6 @@
 import { clerkClient } from "@clerk/nextjs";
 import type { User } from "@clerk/nextjs/dist/types/server";
 import type { Show as PrismaShow, Show } from "@prisma/client";
-import fastDeepEqual from "fast-deep-equal/es6";
 import Jimp from "jimp";
 import JPEG from "jpeg-js";
 import { z } from "zod";
@@ -161,37 +160,33 @@ export const showRouter = createTRPCRouter({
       });
       const cachedUrls =
         (await cacheGetJSON("showPhotosLinks", input.id)) ?? {};
-      let urlsToAdd = {
-        ...cachedUrls,
-      };
-      const returnedPhotos = await Promise.all(
-        photos.map((photo) => {
-          const cachedUrl = cachedUrls[photo.id];
-          let url = cachedUrl?.url;
-          if (
-            !url ||
-            (cachedUrl?.expiresAt && cachedUrl?.expiresAt < Date.now())
-          ) {
-            url = s3Service.getPresignedLink(
-              photo.id + "-watermark.jpg",
-              604800
-            );
-            urlsToAdd = {
-              ...urlsToAdd,
-              [photo.id]: {
-                url,
-                expiresAt: Date.now() + 604700000,
-              },
-            };
-          }
-          return {
-            ...photo,
+      const urlsToAdd = { ...cachedUrls };
+      let cacheDirty = false;
+      const returnedPhotos = photos.map((photo) => {
+        const cachedUrl = cachedUrls[photo.id];
+        let url = cachedUrl?.url;
+        if (
+          !url ||
+          (cachedUrl?.expiresAt && cachedUrl.expiresAt < Date.now())
+        ) {
+          url = s3Service.getPresignedLink(
+            photo.id + "-watermark.jpg",
+            604800
+          );
+          urlsToAdd[photo.id] = {
             url,
+            expiresAt: Date.now() + 604700000,
           };
-        })
-      );
-      if (!fastDeepEqual(urlsToAdd, cachedUrls))
-        await cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
+          cacheDirty = true;
+        }
+        return {
+          ...photo,
+          url,
+        };
+      });
+      if (cacheDirty) {
+        void cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
+      }
       return returnedPhotos;
     }),
   invalidateShowPhotosLinksCache: adminProcedure
