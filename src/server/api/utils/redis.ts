@@ -2,6 +2,12 @@
 
 import { createClient } from "redis";
 
+type ShowScheduleItem = {
+  name: string;
+  date: string;
+  location: string;
+};
+
 interface RedisStorage {
   showPhotosLinks: Record<
     string,
@@ -10,9 +16,11 @@ interface RedisStorage {
       expiresAt: number;
     }
   >;
+  showSchedule: ShowScheduleItem[];
 }
 interface RedisStorageKeyTypes extends Record<keyof RedisStorage, unknown> {
   showPhotosLinks: string;
+  showSchedule: "global";
 }
 
 const redisClient = createClient({

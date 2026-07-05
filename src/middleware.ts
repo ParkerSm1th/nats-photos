@@ -1,8 +1,18 @@
-import { clerkClient } from "@clerk/nextjs";
 import { getAuth, withClerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { HOSTNAME, isAdmin as isUserAdmin } from "./lib/utils";
+
+function getPublicMetadataFromClaims(
+  sessionClaims: Record<string, unknown> | null | undefined
+): UserPublicMetadata | undefined {
+  if (!sessionClaims) return undefined;
+  const claims = sessionClaims as {
+    publicMetadata?: UserPublicMetadata;
+    metadata?: UserPublicMetadata;
+  };
+  return claims.publicMetadata ?? claims.metadata;
+}
 
 const publicPaths = [
   "/",
@@ -46,8 +56,10 @@ export default withClerkMiddleware(async (request: NextRequest) => {
   }
 
   if (isAdmin(request.nextUrl.pathname)) {
-    const user = await clerkClient.users.getUser(userId);
-    if (!user?.publicMetadata || !isUserAdmin(user?.publicMetadata)) {
+    const metadata = getPublicMetadataFromClaims(
+      getAuth(request).sessionClaims as Record<string, unknown> | null
+    );
+    if (!metadata || !isUserAdmin(metadata)) {
       return NextResponse.redirect(`${HOSTNAME()}/photos`);
     }
   }

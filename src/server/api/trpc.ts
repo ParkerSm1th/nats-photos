@@ -20,7 +20,7 @@ import type {
   SignedInAuthObject,
   SignedOutAuthObject,
 } from "@clerk/nextjs/api";
-import { clerkClient, getAuth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
 import { prisma } from "../db";
@@ -72,36 +72,43 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
+function getPublicMetadata(
+  auth: SignedInAuthObject | SignedOutAuthObject
+): UserPublicMetadata | undefined {
+  if (!auth.sessionClaims) return undefined;
+  const claims = auth.sessionClaims as {
+    publicMetadata?: UserPublicMetadata;
+    metadata?: UserPublicMetadata;
+  };
+  return claims.publicMetadata ?? claims.metadata;
+}
+
 // check if the user is signed in, otherwise through a UNAUTHORIZED CODE
-const isAuthed = t.middleware(async ({ next, ctx }) => {
+const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.auth || !ctx.auth.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const user = await clerkClient.users.getUser(ctx.auth.userId);
-
   return next({
     ctx: {
-      auth: ctx.auth,
-      user,
+      auth: ctx.auth as SignedInAuthObject,
     },
   });
 });
 
-const isAdminUser = t.middleware(async ({ next, ctx }) => {
+const isAdminUser = t.middleware(({ next, ctx }) => {
   if (!ctx.auth || !ctx.auth.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const user = await clerkClient.users.getUser(ctx.auth.userId);
-  if (!user?.publicMetadata || !isAdmin(user?.publicMetadata)) {
+  const metadata = getPublicMetadata(ctx.auth);
+  if (!metadata || !isAdmin(metadata)) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
   return next({
     ctx: {
-      auth: ctx.auth,
-      user,
+      auth: ctx.auth as SignedInAuthObject,
     },
   });
 });

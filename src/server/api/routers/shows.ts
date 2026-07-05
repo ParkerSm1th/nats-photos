@@ -122,16 +122,14 @@ export const showRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const rawShow = await ctx.prisma.show.findUnique({
         where: { slug: input.slug },
+        include: {
+          children: {
+            orderBy: { startDate: "asc" },
+          },
+        },
       });
       if (!rawShow) return null;
-      const childShows = await ctx.prisma.show.findMany({
-        where: { parentId: rawShow.id },
-        orderBy: { startDate: "asc" },
-      });
-      return {
-        ...rawShow,
-        children: childShows,
-      };
+      return rawShow;
     }),
   getShowNameBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
@@ -156,12 +154,32 @@ export const showRouter = createTRPCRouter({
       return rawShow;
     }),
   getShowPhotos: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        cursor: z.string().uuid().optional(),
+        limit: z.number().min(1).max(100).default(40),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
+        orderBy: { createdAt: "asc" },
+        take: input.limit + 1,
+        ...(input.cursor
+          ? {
+              cursor: { id: input.cursor },
+              skip: 1,
+            }
+          : {}),
       });
-      // TODO: Make this a helper function
+
+      let nextCursor: string | undefined;
+      if (photos.length > input.limit) {
+        const nextItem = photos.pop();
+        nextCursor = nextItem!.id;
+      }
+
       if (!getRedisStatus()?.isOpen) {
         reconnectRedis();
       }
@@ -198,7 +216,7 @@ export const showRouter = createTRPCRouter({
       );
       if (!fastDeepEqual(urlsToAdd, cachedUrls))
         await cacheSetJSON("showPhotosLinks", input.id, urlsToAdd, 604800);
-      return returnedPhotos;
+      return { photos: returnedPhotos, nextCursor };
     }),
   invalidateShowPhotosLinksCache: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
@@ -239,7 +257,7 @@ export const showRouter = createTRPCRouter({
         },
       });
       const childIds = children.map((c) => c.id);
-      const purchases = await ctx.prisma.purchases.findMany({
+      const count = await ctx.prisma.purchases.count({
         where: {
           photo: {
             showId: {
@@ -249,8 +267,8 @@ export const showRouter = createTRPCRouter({
         },
       });
       return {
-        purchases: purchases.length,
-        sales: purchases.length * 5,
+        purchases: count,
+        sales: count * 5,
       };
     }),
   getRecentSales: adminProcedure
@@ -275,17 +293,24 @@ export const showRouter = createTRPCRouter({
               in: [...childIds, input.showId],
             },
           },
+          ...(input.sinceSeconds
+            ? {
+                createdAt: {
+                  gte: new Date(Date.now() - input.sinceSeconds * 1000),
+                },
+              }
+            : {}),
         },
         orderBy: {
           createdAt: "desc",
         },
         take: input.limit ? input.limit : 10,
       });
-      // use await clerkClient.users.getUser(purchase.userId) to get all of the users
-      // from all of the purchases
+      const uniqueUserIds = [...new Set(purchases.map((p) => p.userId))];
       const users = await Promise.all(
-        purchases.map((p) => clerkClient.users.getUser(p.userId))
+        uniqueUserIds.map((userId) => clerkClient.users.getUser(userId))
       );
+      const userById = new Map(users.map((user) => [user.id, user]));
       // reduce purchases down based on their createdAt date
       // and the userId
       const reducedPurchases = purchases.reduce(
@@ -311,7 +336,7 @@ export const showRouter = createTRPCRouter({
           } else {
             acc.push({
               ...purchase,
-              user: users.find((u) => u.id === purchase.userId),
+              user: userById.get(purchase.userId),
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               stripeCheckoutId: purchase.stripeCheckoutId ?? "",
               photosPurchased: 1,
@@ -335,6 +360,13 @@ export const showRouter = createTRPCRouter({
       const purchases = await ctx.prisma.purchases.findMany({
         where: {
           userId: input.userId,
+          ...(input.sinceSeconds
+            ? {
+                createdAt: {
+                  gte: new Date(Date.now() - input.sinceSeconds * 1000),
+                },
+              }
+            : {}),
         },
         orderBy: {
           createdAt: "desc",
@@ -414,13 +446,26 @@ export const showRouter = createTRPCRouter({
       const photo = await ctx.prisma.photo.deleteMany({
         where: { id: { in: input } },
       });
-      for (const p of input) {
-        await s3Service.deleteObject(p + "-watermark.jpg");
-        await s3Service.deleteObject(p + ".jpg");
-      }
+      await Promise.all(
+        input.flatMap((p) => [
+          s3Service.deleteObject(p + "-watermark.jpg"),
+          s3Service.deleteObject(p + ".jpg"),
+        ])
+      );
       return photo;
     }),
   showSchedule: publicProcedure.query(async () => {
+    const CACHE_KEY = "global" as const;
+
+    if (!getRedisStatus()?.isOpen) {
+      reconnectRedis();
+    }
+
+    const cached = await cacheGetJSON("showSchedule", CACHE_KEY);
+    if (cached) {
+      return cached;
+    }
+
     const GOOGLE_CALENDAR_URL =
       "https://www.googleapis.com/calendar/v3/calendars/";
     const CALENDAR_ID =
@@ -457,6 +502,8 @@ export const showRouter = createTRPCRouter({
         location: item.location ? item.location.split(",")[0] : "Colorado",
       };
     });
+
+    await cacheSetJSON("showSchedule", CACHE_KEY, shows, 3600);
 
     return shows;
   }),

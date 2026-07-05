@@ -54,6 +54,8 @@ model Purchases {
 
     @@unique([photoId, userId])
     @@index([photoId, userId])
+    @@index([userId])
+    @@index([createdAt])
 }
 
 enum UserRole {

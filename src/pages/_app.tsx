@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/ui/toaster";
 import { api } from "@/utils/api";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
+import { Raleway } from "next/font/google";
 
 import "@/styles/globals.css";
 
@@ -10,12 +11,29 @@ import type { NextPage } from "next";
 import type { Session } from "next-auth";
 import type { AppType } from "next/app";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { CartProvider } from "@/providers/CartProvider";
 import { UploadsProvider } from "@/providers/UploadsProvider";
+
+const raleway = Raleway({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
 
 export type NextPageWithLayout = NextPage & {
   getLayout?: (page: React.ReactElement) => React.ReactElement;
 };
+
+function AppProviders({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const isAdminRoute = router.pathname.startsWith("/photos/admin");
+
+  if (isAdminRoute) {
+    return <UploadsProvider>{children}</UploadsProvider>;
+  }
+
+  return <>{children}</>;
+}
 
 const MainApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -25,7 +43,7 @@ const MainApp: AppType<{ session: Session | null }> = ({
     (Component as NextPageWithLayout).getLayout ??
     ((page) => <DashboardLayout>{page}</DashboardLayout>);
   return (
-    <>
+    <div className={raleway.className}>
       <Head>
         <meta name="description" content="Natalie Lockhart's Photography" />
         <title>Natalie Lockhart Photography</title>
@@ -47,26 +65,15 @@ const MainApp: AppType<{ session: Session | null }> = ({
           href="/images/favicon/favicon-16x16.png"
         />
         <link rel="manifest" href="/images/favicon/site.webmanifest" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-          rel="stylesheet"
-        ></link>
       </Head>
       <ClerkProvider>
-        <UploadsProvider>
-          <Analytics />
-          <CartProvider>{getLayout(<Component {...pageProps} />)}</CartProvider>
-        </UploadsProvider>
+        <Analytics />
+        <CartProvider>
+          <AppProviders>{getLayout(<Component {...pageProps} />)}</AppProviders>
+        </CartProvider>
       </ClerkProvider>
       <Toaster />
-    </>
+    </div>
   );
 };
 

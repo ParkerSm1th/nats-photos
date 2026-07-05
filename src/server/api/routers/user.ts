@@ -23,29 +23,22 @@ export const userRouter = createTRPCRouter({
         userId: ctx.auth.userId,
       },
       orderBy: { createdAt: "desc" },
-    });
-    const photos = await ctx.prisma.photo.findMany({
-      where: {
-        id: {
-          in: purchases.map((purchase) => purchase.photoId),
+      include: {
+        photo: {
+          include: {
+            show: true,
+          },
         },
       },
     });
-    const shows = await ctx.prisma.show.findMany({
-      where: {
-        id: {
-          in: photos.map((photo) => photo.showId),
-        },
-      },
-    });
-    return purchases.map((purchase) => {
-      const photo = photos.find((photo) => photo.id === purchase.photoId);
-      return {
-        ...purchase,
-        image: s3Service.getPresignedLink(`${photo?.id}-watermark.jpg`, 604800),
-        show: shows.find((show) => show.id === photo?.showId),
-      };
-    });
+    return purchases.map((purchase) => ({
+      ...purchase,
+      image: s3Service.getPresignedLink(
+        `${purchase.photo.id}-watermark.jpg`,
+        604800
+      ),
+      show: purchase.photo.show,
+    }));
   }),
 
   getRawPhoto: protectedProcedure

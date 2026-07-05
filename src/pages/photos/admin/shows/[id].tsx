@@ -1,6 +1,4 @@
 import { ShowChildrenTable } from "@/components/admin/shows/ShowChildrenTable";
-import { UploadPhotoDialog } from "@/components/admin/shows/UploadPhoto";
-import { BarGraph } from "@/components/global/BarGraph";
 import { SpinnerPage } from "@/components/global/Spinner";
 import { PhotoGallery } from "@/components/shows/PhotoGallery";
 import { Button } from "@/components/ui/ui/button";
@@ -19,11 +17,32 @@ import {
 } from "@/components/ui/ui/tabs";
 import { api } from "@/utils/api";
 import clsx from "clsx";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import RecentSales from "../../../../components/admin/shows/dashboard/recent-sales";
 import Stats from "../../../../components/admin/shows/dashboard/stats";
+
+const BarGraph = dynamic(
+  () =>
+    import("@/components/global/BarGraph").then((mod) => ({
+      default: mod.BarGraph,
+    })),
+  { ssr: false }
+);
+
+const UploadPhotoDialog = dynamic(
+  () =>
+    import("@/components/admin/shows/UploadPhoto").then((mod) => ({
+      default: mod.UploadPhotoDialog,
+    })),
+  { ssr: false }
+);
+
+const RecentSales = dynamic(
+  () => import("../../../../components/admin/shows/dashboard/recent-sales"),
+  { ssr: false }
+);
 
 type TABS = "overview" | "photos" | "sub-shows";
 
@@ -57,20 +76,6 @@ export default function Show() {
       window.location.href = "/photos/admin/shows";
     }
   }, [showName]);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: stats, isLoading: isStatsLoading } =
-    api.shows.getDashboardStats.useQuery(
-      {
-        showId: id,
-      },
-      {
-        refetchOnWindowFocus: false,
-        refetchOnMount: false,
-        refetchOnReconnect: false,
-        enabled: !!id,
-      }
-    );
 
   const utils = api.useContext();
 
@@ -182,91 +187,99 @@ export default function Show() {
             )}
           </div>
           <TabsContent value="overview">
-            <Stats showId={id} />
-            <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4">
-                <CardHeader>
-                  <CardTitle>Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <BarGraph
-                    data={[
-                      {
-                        name: "Jan",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Feb",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Mar",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Apr",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "May",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Jun",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Jul",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Aug",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Sep",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Oct",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Nov",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                      {
-                        name: "Dec",
-                        total: Math.floor(Math.random() * 5000) + 1000,
-                      },
-                    ]}
-                  />
-                </CardContent>
-              </Card>
-              <Card className="col-span-3">
-                <RecentSales showId={id} />
-              </Card>
-            </div>
+            {currentTab === "overview" && (
+              <>
+                <Stats showId={id} />
+                <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                  <Card className="col-span-4">
+                    <CardHeader>
+                      <CardTitle>Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                      <BarGraph
+                        data={[
+                          {
+                            name: "Jan",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Feb",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Mar",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Apr",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "May",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Jun",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Jul",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Aug",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Sep",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Oct",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Nov",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                          {
+                            name: "Dec",
+                            total: Math.floor(Math.random() * 5000) + 1000,
+                          },
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                  <Card className="col-span-3">
+                    <RecentSales showId={id} />
+                  </Card>
+                </div>
+              </>
+            )}
           </TabsContent>
           <TabsContent value="photos">
-            <PhotoGallery
-              id={id}
-              showName={showName.data?.name}
-              adminView
-              bulkMode={bulkMode}
-              bulkSelections={bulkSelections}
-              setBulkSelections={setBulkSelections}
-            />
+            {currentTab === "photos" && (
+              <PhotoGallery
+                id={id}
+                showName={showName.data?.name}
+                adminView
+                bulkMode={bulkMode}
+                bulkSelections={bulkSelections}
+                setBulkSelections={setBulkSelections}
+              />
+            )}
           </TabsContent>
           <TabsContent value="sub-shows">
-            <ShowChildrenTable id={id} />
+            {currentTab === "sub-shows" && <ShowChildrenTable id={id} />}
           </TabsContent>
         </Tabs>
-        <UploadPhotoDialog
-          open={isUploadOpen}
-          onClose={() => setIsUploadOpen(false)}
-          showId={id}
-        />
+        {isUploadOpen && (
+          <UploadPhotoDialog
+            open={isUploadOpen}
+            onClose={() => setIsUploadOpen(false)}
+            showId={id}
+          />
+        )}
       </main>
     </>
   );

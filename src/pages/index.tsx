@@ -1,14 +1,14 @@
 import { RootLayout } from "@/components/global/Layout";
-import Lightbox from "@/components/images/Lightbox";
 import { useIsMobile } from "@/utils/hooks/useIsMobile";
 import { faArrowDown } from "@fortawesome/pro-light-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Calendar } from "@/components/ui/calendar";
 import { api } from "@/utils/api";
@@ -17,8 +17,11 @@ import { faBars, faXmark } from "@fortawesome/pro-solid-svg-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import SmallLogo from "../../public/images/WhiteSmallLogo.png";
 
-import Presley from "../../public/images/home/private/presley.jpg";
 import { faEnvelope } from "@fortawesome/pro-regular-svg-icons";
+
+const Lightbox = dynamic(() => import("@/components/images/Lightbox"), {
+  ssr: false,
+});
 
 const NAV_LINKS = [
   {
@@ -228,12 +231,6 @@ function Home() {
 
   const { data, isLoading } = api.shows.showSchedule.useQuery();
 
-  useEffect(() => {
-    if (data) {
-      console.log(data);
-    }
-  }, [data]);
-
   return (
     <>
       <Head>
@@ -275,7 +272,7 @@ function Home() {
           >
             <h2 className="mb-2 text-2xl font-bold">Some of my work</h2>
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
-              {itemsToShow.map((item) => (
+              {itemsToShow.map((item, index) => (
                 <div
                   key={item.image}
                   className="group flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-md"
@@ -296,8 +293,8 @@ function Home() {
                     className="z-0 h-full w-full select-none transition-all group-hover:brightness-50 group-hover:filter"
                     src={item.image}
                     alt="portfolio item"
-                    quality={100}
-                    loading="eager"
+                    quality={78}
+                    loading={index < 3 ? "eager" : "lazy"}
                   />
                 </div>
               ))}
@@ -315,7 +312,7 @@ function Home() {
         <div className="mt-16 w-full overflow-hidden">
           <Image
             src="https://res.cloudinary.com/dqdjvho5d/image/upload/v1692488716/IMG_6221_copy_gwrllk.jpg"
-            quality={100}
+            quality={78}
             height={400}
             width={1000}
             loading="eager"
@@ -334,15 +331,21 @@ function Home() {
             <div className="flex max-w-md flex-col items-center justify-center gap-12">
               <div className="flex flex-row items-center justify-center gap-4">
                 <Image
-                  src={Presley}
+                  src="https://res.cloudinary.com/dqdjvho5d/image/upload/v1725299287/IMG_8602-min_gzvfiy.jpg"
                   alt="Presley & Gator"
+                  width={200}
+                  height={300}
+                  quality={78}
                   className="max-h-44 w-auto md:max-h-64"
                 />
                 <Image
-                  src={'https://res.cloudinary.com/dqdjvho5d/image/upload/v1725302003/ellie_u2zmtz.jpg'}
+                  src={
+                    "https://res.cloudinary.com/dqdjvho5d/image/upload/v1725302003/ellie_u2zmtz.jpg"
+                  }
                   alt="Ellie"
                   width={200}
                   height={200}
+                  quality={78}
                   className="max-h-44 w-auto md:max-h-64"
                 />
               </div>

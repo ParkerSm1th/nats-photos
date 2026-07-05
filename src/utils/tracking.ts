@@ -1,6 +1,16 @@
 import * as amplitude from "@amplitude/analytics-browser";
 import type { StripeError } from "@stripe/stripe-js";
 
+let initialized = false;
+
+function ensureAmplitudeInit() {
+  if (initialized) return;
+  amplitude.init("ebf29143492929aa180a3b1a7777c146", {
+    defaultTracking: true,
+  });
+  initialized = true;
+}
+
 export type TrackingEvent =
   | {
       type: "pageview";
@@ -43,9 +53,7 @@ export type TrackingEvent =
       metadata: string;
     };
 export function trackEvent(event: TrackingEvent, userId?: string | null) {
-  amplitude.init("ebf29143492929aa180a3b1a7777c146", {
-    defaultTracking: true,
-  });
+  ensureAmplitudeInit();
   if (userId) {
     amplitude.setUserId(userId);
   }

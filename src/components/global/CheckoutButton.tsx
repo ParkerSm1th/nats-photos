@@ -13,10 +13,6 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/ui/spinner";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
-
 const CheckoutButton = () => {
   const router = useRouter();
   const { userId } = useAuth();
@@ -44,7 +40,9 @@ const CheckoutButton = () => {
     );
     setLoading(true);
     try {
-      const stripe = await stripePromise;
+      const stripe = await loadStripe(
+        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+      );
       if (!stripe) {
         throw new Error("Stripe.js hasn't loaded yet!");
       }
