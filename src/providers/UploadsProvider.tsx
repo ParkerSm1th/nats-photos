@@ -41,6 +41,8 @@ export const UploadsProvider: FC<Props> = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const generateLink = api.shows.getPresignedUploadLink.useMutation();
   const addPhoto = api.shows.addPhoto.useMutation();
+  const invalidateShowPhotosLinksCache =
+    api.shows.invalidateShowPhotosLinksCache.useMutation();
 
   const addToQueue = useCallback(
     (items: UploadQueueItem[]) => {
@@ -73,6 +75,7 @@ export const UploadsProvider: FC<Props> = ({ children }) => {
 
   const triggerUpload = useCallback(async () => {
     setLoading(true);
+    const showIds = new Set(queue.map((item) => item.showId));
     for (const newFile of queue) {
       const link = await generateLink.mutateAsync({
         photoKey: `${newFile.id}.jpg`,
@@ -103,8 +106,21 @@ export const UploadsProvider: FC<Props> = ({ children }) => {
         removeFromQueue(newFile.id);
       }
     }
+    for (const showId of showIds) {
+      try {
+        await invalidateShowPhotosLinksCache.mutateAsync({ id: showId });
+      } catch (err) {
+        console.error(err);
+      }
+    }
     setLoading(false);
-  }, [addPhoto, generateLink, queue, removeFromQueue]);
+  }, [
+    addPhoto,
+    generateLink,
+    invalidateShowPhotosLinksCache,
+    queue,
+    removeFromQueue,
+  ]);
 
   const value = useMemo<ContextType>(
     () => ({

@@ -36,19 +36,23 @@ export const PhotoGallery = ({
     },
     {
       refetchOnMount: false,
-      refetchOnReconnect: false,
+      refetchOnReconnect: true,
       refetchOnWindowFocus: false,
+      retry: 2,
     }
   );
 
   const utils = api.useContext();
 
   const deletePhotoMutation = api.shows.deletePhoto.useMutation();
+  const invalidateShowPhotosLinksCache =
+    api.shows.invalidateShowPhotosLinksCache.useMutation();
 
   const deletePhoto = async (photoId: string): Promise<void> => {
     await deletePhotoMutation.mutateAsync({
       photoId: photoId,
     });
+    await invalidateShowPhotosLinksCache.mutateAsync({ id });
     // Optimistically remove from UI
     const newData = data?.filter((item) => item.id !== photoId) ?? [];
     utils.shows.getShowPhotos.setData(

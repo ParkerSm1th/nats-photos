@@ -11,10 +11,8 @@ import { adminProcedure, createTRPCRouter, publicProcedure } from "../trpc";
 import {
   cacheGetJSON,
   cacheSetJSON,
-  getRedisStatus,
   invalidateCache,
-  reconnectRedis,
-} from "../utils/redis";
+} from "../utils/cache";
 
 const s3Service = new S3Service("natalies-photos");
 
@@ -161,10 +159,6 @@ export const showRouter = createTRPCRouter({
       const photos = await ctx.prisma.photo.findMany({
         where: { showId: input.id },
       });
-      // TODO: Make this a helper function
-      if (!getRedisStatus()?.isOpen) {
-        reconnectRedis();
-      }
       const cachedUrls =
         (await cacheGetJSON("showPhotosLinks", input.id)) ?? {};
       let urlsToAdd = {

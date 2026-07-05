@@ -29,6 +29,8 @@ export const env = createEnv({
     STRIPE_SIGNING_SECRET: z.string().min(1),
     NEXT_PUBLIC_ORIGIN: z.string().min(1),
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+    KV_REST_API_URL: z.string().url(),
+    KV_REST_API_TOKEN: z.string().min(1),
   },
 
   /**
@@ -59,6 +61,8 @@ export const env = createEnv({
     STRIPE_SIGNING_SECRET: process.env.STRIPE_SIGNING_SECRET,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    KV_REST_API_URL: process.env.KV_REST_API_URL,
+    KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
