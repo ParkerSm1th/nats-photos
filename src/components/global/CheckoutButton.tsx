@@ -1,5 +1,4 @@
 import { PRICE_PER_PHOTO } from "@/common/constants";
-import { HOSTNAME } from "@/lib/utils";
 import { useCart } from "@/providers/CartProvider";
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -26,7 +25,10 @@ const CheckoutButton = () => {
 
   const handleCheckout = async () => {
     if (!userId) {
-      await router.push(`/sign-in?redirect_url=${HOSTNAME()}/photos/cart`);
+      const redirectUrl = encodeURIComponent(
+        `${window.location.origin}/photos/cart`
+      );
+      await router.push(`/sign-in?redirect_url=${redirectUrl}`);
       return;
     }
     trackEvent(
