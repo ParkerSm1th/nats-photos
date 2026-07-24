@@ -350,7 +350,7 @@ function Home() {
                 <h2 className="text-center text-2xl">Private Session</h2>
                 <p className="text-center">
                   Private sessions are based at <strong>$200</strong> for an
-                  1hr-1.5hr long shoot. With this package, you get 5 free
+                  1hr-1.5hr long shoot. With this package, you get 20 free
                   pictures, outfit changes, and no extra pet fee if you choose
                   to bring a furry friend. All other pictures that you want to
                   purchase will be $5.
@@ -363,9 +363,8 @@ function Home() {
                 <p className="text-center">
                   Grab 3 friends and plan a date! This session is based at a
                   price of <strong>$400</strong>. This session will be a 2hr
-                  session and will include one outfit change and 5 free pictures
-                  for each person. All other pictures that you or your party
-                  will want to purchase will be $5.
+                  session and will include 15 free pictures. All other pictures
+                  that you or your party will want to purchase will be $5.
                 </p>
               </div>
               <div className="flex max-w-md flex-col items-center justify-center gap-2">
@@ -377,11 +376,10 @@ function Home() {
                 </div>
                 <p className="text-center">
                   Wrangle your barn buddies and horses! Included in this package
-                  deal is 5 or more people & horses, one outfit change, and five
+                  deal is 5 or more people & horses, one outfit change, and 10
                   free pictures per person. This package starts at{" "}
                   <strong>$500</strong> and will be located at your residing
-                  barn! It will be an 1hr-1.5hr per person, so prepare
-                  accordingly!
+                  barn! It will be an 1hr-1.5hr session, so prepare accordingly!
                 </p>
               </div>
             </div>
